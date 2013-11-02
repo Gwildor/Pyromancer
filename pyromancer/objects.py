@@ -1,5 +1,6 @@
 import datetime
 import socket
+import time
 
 from irc.buffer import DecodingLineBuffer
 
@@ -31,6 +32,8 @@ class Pyromancer(object):
                 if line[0] == 'PING':
                     self.connection.write('PONG {}\n'.format(line[1]))
 
+            time.sleep(1.0 / self.ticks)
+
     def parse_settings(self, settings):
         self.host = settings.get('host', '')
         self.port = settings.get('port', 6667)
@@ -38,6 +41,7 @@ class Pyromancer(object):
         self.nick = settings['nick']
         self.ident = settings.get('ident', self.nick)
         self.real_name = settings.get('real_name', self.nick)
+        self.ticks = settings.get('ticks', 10)
 
 
 class Connection(object):
