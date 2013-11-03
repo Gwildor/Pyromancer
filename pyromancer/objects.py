@@ -1,4 +1,6 @@
 import datetime
+import importlib
+import inspect
 import socket
 import re
 import time
@@ -29,7 +31,6 @@ class Pyromancer(object):
 
             for line in self.connection.buffer.lines():
                 line = Line(line)
-                print(line)
 
                 if line[0] == 'PING':
                     self.connection.write('PONG {}\n'.format(line[1]))
@@ -47,8 +48,21 @@ class Pyromancer(object):
             time.sleep(1.0 / self.ticks)
 
     def find_commands(self):
-        from pyromancer.commands.test_examples import hi, greeting
-        self.commands = [hi, greeting]
+        self.commands = []
+
+        for m in self.packages:
+            package, submodule = m.split('.', 1)
+
+            if not package:
+                package = 'pyromancer'
+
+            module = importlib.import_module(
+                '{}.commands.{}'.format(package, submodule))
+
+            functions = inspect.getmembers(module, inspect.isfunction)
+
+            self.commands.extend(f for fn, f in functions
+                                 if hasattr(f, 'match'))
 
     def parse_settings(self, settings):
         self.host = settings.get('host', '')
@@ -58,6 +72,7 @@ class Pyromancer(object):
         self.ident = settings.get('ident', self.nick)
         self.real_name = settings.get('real_name', self.nick)
         self.ticks = settings.get('ticks', 10)
+        self.packages = settings.get('packages', [])
 
 
 class Connection(object):
