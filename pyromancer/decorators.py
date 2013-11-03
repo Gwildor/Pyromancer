@@ -2,16 +2,22 @@ from functools import wraps
 import re
 
 
-def command(match, *args, **kwargs):
-    match = re.compile(match)
+class command(object):
 
-    def decorator(fn):
+    def __init__(self, pattern, *args, **kwargs):
+        self.pattern = re.compile(pattern)
+
+    def __call__(self, fn):
 
         @wraps(fn)
         def wrapper(*fn_args, **fn_kwargs):
             fn(*fn_args, **fn_kwargs)
 
-        wrapper.match = match
+        wrapper.command = self
         return wrapper
 
-    return decorator
+    def match(self, line):
+        if not line.usermsg:
+            return
+
+        return re.search(self.pattern, line.full_msg)

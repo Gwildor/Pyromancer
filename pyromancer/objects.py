@@ -2,7 +2,6 @@ import datetime
 import importlib
 import inspect
 import socket
-import re
 import time
 
 from irc.buffer import DecodingLineBuffer
@@ -35,15 +34,12 @@ class Pyromancer(object):
                 if line[0] == 'PING':
                     self.connection.write('PONG {}\n'.format(line[1]))
 
-                for command in self.commands:
-                    if not line.usermsg:
-                        continue
-
-                    m = re.search(command.match, line.full_msg)
+                for c in self.commands:
+                    m = c.command.match(line)
 
                     if m:
                         match = Match(m, line, self.connection)
-                        command(match)
+                        c(match)
 
             time.sleep(1.0 / self.ticks)
 
@@ -62,7 +58,7 @@ class Pyromancer(object):
             functions = inspect.getmembers(module, inspect.isfunction)
 
             self.commands.extend(f for fn, f in functions
-                                 if hasattr(f, 'match'))
+                                 if hasattr(f, 'command'))
 
     def parse_settings(self, settings):
         self.host = settings.get('host', '')
