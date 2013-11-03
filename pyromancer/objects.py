@@ -89,10 +89,7 @@ class Line(object):
     def __getitem__(self, item):
         try:
             if self.usermsg:
-                word = self.parts[item + 3]
-
-                # First word of text starts with a ":", which we don't want
-                return word[1:] if item == 0 else word
+                return self.full_msg.split(' ')[item]
             else:
                 return self.parts[item]
         except KeyError:
