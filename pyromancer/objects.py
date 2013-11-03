@@ -1,5 +1,6 @@
 import datetime
 import socket
+import re
 import time
 
 from irc.buffer import DecodingLineBuffer
@@ -9,6 +10,7 @@ class Pyromancer(object):
 
     def __init__(self, settings):
         self.parse_settings(settings)
+        self.find_commands()
 
     def connect(self):
         return Connection(self.host, self.port, self.encoding)
@@ -32,7 +34,21 @@ class Pyromancer(object):
                 if line[0] == 'PING':
                     self.connection.write('PONG {}\n'.format(line[1]))
 
+                for command in self.commands:
+                    if not line.usermsg:
+                        continue
+
+                    m = re.search(command.match, line.full_msg)
+
+                    if m:
+                        match = Match(m, line, self.connection)
+                        command(match)
+
             time.sleep(1.0 / self.ticks)
+
+    def find_commands(self):
+        from pyromancer.commands.test_examples import hi, greeting
+        self.commands = [hi, greeting]
 
     def parse_settings(self, settings):
         self.host = settings.get('host', '')
@@ -77,6 +93,30 @@ class User(object):
 
     def __repr__(self):
         return '{0.nick}@{0.host}'.format(self) if self.nick else self.host
+
+
+class Match(object):
+    """
+    This class acts as a layer between the code in commands and the other
+    objects and should have multiple uses and shortcut functions. An object is
+    created for every matching command and is passed on as an argument to the
+    command to use. It provides easy access to any captured groups of the
+    matching regex.
+
+    Later on, it should provide some utility functions for messaging and other
+    things a command may like to do.
+    """
+
+    def __init__(self, match, line, connection):
+        self.match = match
+        self.line = line
+        self.connection = connection
+
+    def __getitem__(self, item):
+        try:
+            return self.match.group(item)
+        except:
+            return ''
 
 
 class Line(object):
