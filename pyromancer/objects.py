@@ -126,8 +126,32 @@ class Match(object):
     def __getitem__(self, item):
         try:
             return self.match.group(item)
-        except:
+        except IndexError:
             return ''
+
+    def msg(self, message, target=None, raw=False, *args, **kwargs):
+        """Shortcut to send a message through the connection.
+
+        This function sends the input message through the connection. A target
+        can be defined, else it will send it to the channel or user from the
+        input Line, effectively responding on whatever triggered the command
+        which calls this function to be called. If raw has not been set to
+        True, formatting will be applied using the standard Python Formatting
+        Mini-Language, using the additional given args and kwargs, along with
+        some additional kwargs, such as the match object to easily access Regex
+        matches, color codes and other things.
+
+        http://docs.python.org/3.3/library/string.html#format-string-syntax
+        """
+
+        if not target:
+            target = self.line.sender.nick if self.line.pm else \
+                self.line.target
+
+        if not raw:
+            message = message.format(m=self, *args, **kwargs)
+
+        self.connection.msg(target, message)
 
 
 class Line(object):

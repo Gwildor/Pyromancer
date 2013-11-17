@@ -39,7 +39,7 @@ from pyromancer.decorators import command
 
 @command(r'bye (.*)')
 def bye(match):
-    match.connection.msg(match.line.sender.nick, 'Bye {}!'.format(match[1]))
+    match.msg('Bye {m[1]}!')
 ```
 
 init.py:
@@ -56,3 +56,17 @@ On IRC:
 ```
 
 Pyromancer scans the modules in the settings automatically for functions decorated using the commands decorator, so all your commands in `test_commands.py` are used automatically.
+
+#### The `Match.msg` function
+
+The `Match.msg` function applies formatting by default and provides some additional utilities. The most important of those is that when no target has been passed on as an argument, it will use either the channel or the user (in case of a PM) whose input line triggered the command to be executed as the target, effectively replying.
+
+##### Parameters
+
+* `message` - the message to be send to the server. Formatting will be applied when `raw=False` using any additional `args` and `kwargs`, so you can apply the full power of the [Python Format Mini-Language](http://docs.python.org/3.3/library/string.html#format-string-syntax) on the message.
+
+* `target` - the target to send the message to. If not provided, it will attempt to use either the channel or user whose input line triggered the command, which effectively results in repplying.
+
+* `raw` - defaults to `False`. When true, no formatting is applied on `message`.
+
+* `args` and `kwargs` - arguments to be passed on through the formatting which is applied on `message`.
