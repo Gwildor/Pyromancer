@@ -167,7 +167,7 @@ class Line(object):
                 return self.full_msg.split(' ')[item]
             else:
                 return self.parts[item]
-        except KeyError:
+        except IndexError:
             return ''
 
     def __repr__(self):
