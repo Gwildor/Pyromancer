@@ -129,7 +129,7 @@ class Match(object):
         except IndexError:
             return ''
 
-    def msg(self, message, target=None, raw=False, *args, **kwargs):
+    def msg(self, message, *args, **kwargs):
         """Shortcut to send a message through the connection.
 
         This function sends the input message through the connection. A target
@@ -144,12 +144,15 @@ class Match(object):
         http://docs.python.org/3.3/library/string.html#format-string-syntax
         """
 
+        target = kwargs.pop('target', None)
+        raw = kwargs.pop('raw', False)
+
         if not target:
             target = self.line.sender.nick if self.line.pm else \
                 self.line.target
 
         if not raw:
-            message = message.format(m=self, *args, **kwargs)
+            message = message.format(*args, m=self, **kwargs)
 
         self.connection.msg(target, message)
 
