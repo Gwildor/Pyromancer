@@ -1,6 +1,8 @@
 from functools import wraps
 import re
 
+from pyromancer.objects import Match
+
 
 class command(object):
 
@@ -14,10 +16,14 @@ class command(object):
             fn(*fn_args, **fn_kwargs)
 
         wrapper.command = self
+        self.function = wrapper
         return wrapper
 
-    def match(self, line):
+    def match(self, line, connection):
         if not line.usermsg:
             return
 
-        return re.search(self.pattern, line.full_msg)
+        m = re.search(self.pattern, line.full_msg)
+        if m:
+            match = Match(m, line, connection)
+            self.function(match)

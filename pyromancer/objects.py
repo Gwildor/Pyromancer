@@ -35,11 +35,7 @@ class Pyromancer(object):
                     self.connection.write('PONG {}\n'.format(line[1]))
 
                 for c in self.commands:
-                    m = c.command.match(line)
-
-                    if m:
-                        match = Match(m, line, self.connection)
-                        c(match)
+                    c.command.match(line, self.connection)
 
             time.sleep(1.0 / self.ticks)
 
