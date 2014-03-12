@@ -1,5 +1,6 @@
 from functools import wraps
 import re
+from types import GeneratorType
 
 from pyromancer.objects import Match
 
@@ -13,7 +14,7 @@ class command(object):
 
         @wraps(fn)
         def wrapper(*fn_args, **fn_kwargs):
-            fn(*fn_args, **fn_kwargs)
+            return fn(*fn_args, **fn_kwargs)
 
         wrapper.command = self
         self.function = wrapper
@@ -24,6 +25,29 @@ class command(object):
             return
 
         m = re.search(self.pattern, line.full_msg)
-        if m:
-            match = Match(m, line, connection)
-            self.function(match)
+        if not m:
+            return
+
+        match = Match(m, line, connection)
+        result = self.function(match)
+
+        if isinstance(result, (list, GeneratorType)):
+            messages = result
+        elif isinstance(result, tuple):
+            messages = [result]
+        else:
+            messages = []
+
+        for msg in messages:
+            if isinstance(msg, tuple):
+                msg, *args, kwargs = msg
+
+                # If the reuslt is (msg, positional argument,), make sure it
+                # still works correctly as expected for the formatting.
+                if not isinstance(kwargs, dict):
+                    args.append(kwargs)
+                    kwargs = {}
+            else:
+                args, kwargs = [], {}
+
+            match.msg(msg, *args, **kwargs)

@@ -9,3 +9,8 @@ def hi(match):
 @command(r'hi (.*)')
 def greeting(match):
     match.msg('Hello {m[1]}!')
+
+@command(r'say (.*)')
+def say(match):
+    for part in match[1].split(', '):
+        yield 'Saying {}', part
