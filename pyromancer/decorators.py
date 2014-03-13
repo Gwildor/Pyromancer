@@ -38,7 +38,6 @@ class command(object):
             input = line.full_msg[len(prefix):]
         else:
             input = line.full_msg
-        print(input)
 
         m = None
         for pattern in self.patterns:

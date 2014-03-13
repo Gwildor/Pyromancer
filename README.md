@@ -1,4 +1,4 @@
-Simple IRC bot implementation.
+Simple framework for creating IRC bots.
 
 ### Example
 
@@ -39,7 +39,7 @@ from pyromancer.decorators import command
 
 @command(r'bye (.*)')
 def bye(match):
-    match.msg('Bye {m[1]}!')
+    return 'Bye {m[1]}!'
 ```
 
 init.py:
@@ -57,16 +57,70 @@ On IRC:
 
 Pyromancer scans the modules in the settings automatically for functions decorated using the commands decorator, so all your commands in `test_commands.py` are used automatically.
 
-#### The `Match.msg` function
+#### The `command` decorator
 
-The `Match.msg` function applies formatting by default and provides some additional utilities. The most important of those is that when no target has been passed on as an argument, it will use either the channel or the user (in case of a PM) whose input line triggered the command to be executed as the target, effectively replying.
+You must apply this to a function to mark it as a command. It will be used when scanning for and collecting commands.
 
 ##### Parameters
 
-* `message` - the message to be send to the server. Formatting will be applied when `raw=False` using any additional `args` and `kwargs`, so you can apply the full power of the [Python Format Mini-Language](http://docs.python.org/3.3/library/string.html#format-string-syntax) on the message.
+* `patterns` - a regular expression or a list of expressions. When a list is given, all patterns are attempted when matching the input, and only when all patterns in the list fail to match, the command is not executed.
+```python
+@command(['hi', 'hello'])
+def hi(match):
+    return 'Hello!'
+```
 
-* `target` - the target to send the message to. If not provided, it will attempt to use either the channel or user whose input line triggered the command, which effectively results in repplying.
+* `prefix` - a boolean which defaults to `True`. When true, the command pattern is only attempted to match when the message line starts with the prefix defined in the settings of the bot. This is useful for commands which are very bot-like (in contrary to commands which look and behave like natural language). Using a boolean and a setting allows the same command to be triggered in different ways, depending on the settings of the bot which installed the command package.
 
-* `raw` - defaults to `False`. When true, no formatting is applied on `message`.
+#### Messaging from a command
+
+Messaging from inside the function which makes up the command is as easy as can be for simple use cases, but can be done in numerous ways for the more complex situations.
+
+Most of the times, arguments are passed to the `Match.msg` function, which applies formatting by default and provides some additional utilities. The most important of those is that when no target has been passed on as an argument, it will use either the channel or the user (in case of a PM) whose input line triggered the command to be executed as the target, effectively replying.
+
+##### Parameters
+
+* `message` - the message to be send to the server. Formatting will be applied using any additional `args` and `kwargs`, so you can apply the full power of the [Python Format Mini-Language](http://docs.python.org/3.3/library/string.html#format-string-syntax) on the message.
 
 * `args` and `kwargs` - arguments to be passed on through the formatting which is applied on `message`.
+
+##### Methods of messaging
+
+* Return a `message`
+```python
+@command(r'bye (.*)')
+def bye(match):
+    return 'Bye {m[1]}!'
+```
+
+* Return a tuple of `message` and optional `args` and `kwargs` to be used when formatting `message`. `args` can be both a list of arguments, or simply all the middle elements of the tuple.
+```python
+def gibberish(match):
+    return 'A = {}, B = {}, C = {c_char}', 'a', 'b', {'c_char': 'c'}
+```
+
+* Yield a `message` or a tuple of `message` and optional `args` and `kwargs`. Yielding can be done as much as you want, which is the easiest way of sending multiple messages from one command.
+```python
+@command(r'say (.*)')
+def say(match):
+    for part in match[1].split(', '):
+        yield 'Saying {}', part
+```
+
+* Return a list of `message` or a tuple of `message` and optional `args` and `kwargs`.
+```python
+def hi(match):
+    return ['Hi', 'Hello']
+```
+
+* Use `Match.msg`. This is the only way to benefit from the non-default functionalities provided by this function.
+```python
+def raw(match):
+    match.msg('Raw {} message {m[1]}', raw=True)
+```
+
+##### Extra parameters for `Match.msg`
+
+* `target` - the target to send the message to. If not provided, it will attempt to use either the channel or user whose input line triggered the command, which effectively results in replying.
+
+* `raw` - defaults to `False`. When true, no formatting is applied on `message`.
