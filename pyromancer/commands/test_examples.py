@@ -1,7 +1,7 @@
 from pyromancer.decorators import command
 
 
-@command(r'hi$')
+@command(r'hi$', prefix=False)
 def hi(match):
     match.msg('Hello!')
 

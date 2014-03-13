@@ -13,6 +13,8 @@ class command(object):
 
         self.patterns = [re.compile(p) for p in patterns]
 
+        self.use_prefix = kwargs.get('prefix', True)
+
     def __call__(self, fn):
 
         @wraps(fn)
@@ -23,13 +25,24 @@ class command(object):
         self.function = wrapper
         return wrapper
 
-    def match(self, line, connection):
+    def match(self, line, connection, prefix):
         if not line.usermsg:
             return
 
+        if self.use_prefix:
+            if not line.full_msg.startswith(prefix):
+                return
+
+            # todo: add support for tuple of prefixes; this line currently
+            # prohibits that support.
+            input = line.full_msg[len(prefix):]
+        else:
+            input = line.full_msg
+        print(input)
+
         m = None
         for pattern in self.patterns:
-            m = re.search(pattern, line.full_msg)
+            m = re.search(pattern, input)
 
             if m:
                 break

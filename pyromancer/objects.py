@@ -35,7 +35,7 @@ class Pyromancer(object):
                     self.connection.write('PONG {}\n'.format(line[1]))
 
                 for c in self.commands:
-                    c.command.match(line, self.connection)
+                    c.command.match(line, self.connection, self.command_prefix)
 
             time.sleep(1.0 / self.ticks)
 
@@ -65,6 +65,7 @@ class Pyromancer(object):
         self.real_name = settings.get('real_name', self.nick)
         self.ticks = settings.get('ticks', 10)
         self.packages = settings.get('packages', [])
+        self.command_prefix = settings.get('prefix', '!')
 
 
 class Connection(object):
