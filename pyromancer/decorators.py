@@ -7,8 +7,11 @@ from pyromancer.objects import Match
 
 class command(object):
 
-    def __init__(self, pattern, *args, **kwargs):
-        self.pattern = re.compile(pattern)
+    def __init__(self, patterns, *args, **kwargs):
+        if not isinstance(patterns, list):
+            patterns = [patterns]
+
+        self.patterns = [re.compile(p) for p in patterns]
 
     def __call__(self, fn):
 
@@ -24,7 +27,13 @@ class command(object):
         if not line.usermsg:
             return
 
-        m = re.search(self.pattern, line.full_msg)
+        m = None
+        for pattern in self.patterns:
+            m = re.search(pattern, line.full_msg)
+
+            if m:
+                break
+
         if not m:
             return
 
@@ -42,7 +51,7 @@ class command(object):
             if isinstance(msg, tuple):
                 msg, *args, kwargs = msg
 
-                # If the reuslt is (msg, positional argument,), make sure it
+                # If the result is (msg, positional argument,), make sure it
                 # still works correctly as expected for the formatting.
                 if not isinstance(kwargs, dict):
                     args.append(kwargs)
