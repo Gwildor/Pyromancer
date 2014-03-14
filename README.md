@@ -124,3 +124,36 @@ def raw(match):
 * `target` - the target to send the message to. If not provided, it will attempt to use either the channel or user whose input line triggered the command, which effectively results in replying.
 
 * `raw` - defaults to `False`. When true, no formatting is applied on `message`.
+
+
+### Dependencies
+
+* [irc][1]
+
+
+  [1]: https://pypi.python.org/pypi/irc
+  
+### To do
+
+* Ability to process raw lines through custom commands
+* Figure out how to do translation of messages through the `Match.msg` function.
+* Add timers
+* Make a module of settings (like Django), with settings for each installed package prioritized based on place in packages setting (not like Django).
+* Add a command module which keeps track of channels joined and users in them which other commands can use.
+* Redo commands loading so you can use `commands.py` for custom commands instead of a mandatory `commands` directory.
+* Redo package loading so you just have to specify the package name and it loads the commands and any future things like settings.
+
+### Changelist
+
+#### 0.2 - 2014-03-14
+
+* Add tests
+* Add multiple and easier ways to send messages from a command.
+* Add support for multiple patterns for the same command.
+* Add a configurable command prefix setting for the more bot-like commands.
+* Trying to access a word in a `Line` now correctly returns an empty string when the index does not exist.
+* Fix passing positional arguments to `Match.msg` not working properly.
+
+#### 0.1 - 2013-11-17
+
+* Initial release
