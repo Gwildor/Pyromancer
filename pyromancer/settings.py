@@ -1,0 +1,9 @@
+host = ''
+port = 6667
+encoding = 'utf8'
+nick = ''
+ident = nick
+real_name = nick
+ticks = 10
+packages = []
+command_prefix = '!'

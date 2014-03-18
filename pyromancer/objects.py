@@ -9,22 +9,23 @@ from irc.buffer import DecodingLineBuffer
 
 class Pyromancer(object):
 
-    def __init__(self, settings):
-        self.parse_settings(settings)
+    def __init__(self, settings_path):
+        self.settings = Settings(settings_path)
         self.find_commands()
 
     def connect(self):
-        return Connection(self.host, self.port, self.encoding)
+        return Connection(self.settings.host, self.settings.port,
+                          self.settings.encoding)
 
     def run(self):
         self.connection = self.connect()
         self.online = True
 
-        self.connection.write('NICK {}\n'.format(self.nick))
-        self.connection.write('USER {0} {1} {1} :{2}\n'.format(self.nick,
-                                                               self.host,
-                                                               self.real_name))
+        self.connection.write('NICK {}\n'.format(self.settings.nick))
+        self.connection.write('USER {0} {1} {1} :{2}\n'.format(
+            self.settings.nick, self.settings.host, self.settings.real_name))
 
+        ticks = self.settings.ticks
         while self.online:
             self.connection.read()
 
@@ -35,14 +36,14 @@ class Pyromancer(object):
                     self.connection.write('PONG {}\n'.format(line[1]))
 
                 for c in self.commands:
-                    c.command.match(line, self.connection, self.command_prefix)
+                    c.command.match(line, self.connection, self.settings)
 
-            time.sleep(1.0 / self.ticks)
+            time.sleep(1.0 / ticks)
 
     def find_commands(self):
         self.commands = []
 
-        for m in self.packages:
+        for m in self.settings.packages:
             package, submodule = m.split('.', 1)
 
             if not package:
@@ -56,16 +57,31 @@ class Pyromancer(object):
             self.commands.extend(f for fn, f in functions
                                  if hasattr(f, 'command'))
 
-    def parse_settings(self, settings):
-        self.host = settings.get('host', '')
-        self.port = settings.get('port', 6667)
-        self.encoding = settings.get('encoding', 'utf8')
-        self.nick = settings['nick']
-        self.ident = settings.get('ident', self.nick)
-        self.real_name = settings.get('real_name', self.nick)
-        self.ticks = settings.get('ticks', 10)
-        self.packages = settings.get('packages', [])
-        self.command_prefix = settings.get('prefix', '!')
+
+class Settings(object):
+
+    def __init__(self, path):
+        self.main_settings = importlib.import_module(path)
+        self.packages = self.main_settings.packages
+        self.package_settings = {}
+
+        if 'pyromancer' not in self.packages:
+            self.packages.append('pyromancer')
+
+        for package in self.packages:
+            self.package_settings[package] = importlib.import_module(
+                '{}.settings'.format(package))
+
+    def __getattr__(self, item):
+        if hasattr(self.main_settings, item):
+            return getattr(self.main_settings, item)
+
+        for package in self.packages:
+            if hasattr(self.package_settings[package], item):
+                return getattr(self.package_settings[package], item)
+
+        raise AttributeError('No such setting {} found in any of the '
+                             'installed packages'.format(item))
 
 
 class Connection(object):

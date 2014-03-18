@@ -25,17 +25,17 @@ class command(object):
         self.function = wrapper
         return wrapper
 
-    def match(self, line, connection, prefix):
+    def match(self, line, connection, settings):
         if not line.usermsg:
             return
 
         if self.use_prefix:
-            if not line.full_msg.startswith(prefix):
+            if not line.full_msg.startswith(settings.prefix):
                 return
 
             # todo: add support for tuple of prefixes; this line currently
             # prohibits that support.
-            input = line.full_msg[len(prefix):]
+            input = line.full_msg[len(settings.prefix):]
         else:
             input = line.full_msg
 

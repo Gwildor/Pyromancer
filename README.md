@@ -2,18 +2,22 @@ Simple framework for creating IRC bots.
 
 ### Example
 
+init.py:
+
 ```python
 from pyromancer.objects import Pyromancer
 
-HOST = '1.2.3.4'
-PORT = 6667
-NICK = 'PyromancerBot'
-
-settings = {'host': HOST, 'port': PORT, 'nick': NICK, 'encoding': 'ISO-8859-1',
-            'packages': ['.test_examples']}
-
-p = Pyromancer(settings)
+p = Pyromancer('test.settings')
 p.run()
+```
+
+test/settings.py:
+
+```python
+host = '1.2.3.4'
+port = 6667
+nick = 'PyromancerBot'
+encoding = 'ISO-8859-1'
 ```
 
 ### Custom commands
@@ -29,6 +33,7 @@ test/
         __init__.py
         test_commands.py
     __init__.py
+    settings.py
 init.py
 ```
 
@@ -40,12 +45,6 @@ from pyromancer.decorators import command
 @command(r'bye (.*)')
 def bye(match):
     return 'Bye {m[1]}!'
-```
-
-init.py:
-
-```python
-settings['packages'] = ['test.test_commands']
 ```
 
 On IRC:
@@ -138,7 +137,6 @@ def raw(match):
 * Ability to process raw lines through custom commands
 * Figure out how to do translation of messages through the `Match.msg` function.
 * Add timers
-* Make a module of settings (like Django), with settings for each installed package prioritized based on place in packages setting (not like Django).
 * Add a command module which keeps track of channels joined and users in them which other commands can use.
 * Redo commands loading so you can use `commands.py` for custom commands instead of a mandatory `commands` directory.
 * Redo package loading so you just have to specify the package name and it loads the commands and any future things like settings.
