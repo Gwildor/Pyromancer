@@ -71,6 +71,8 @@ def hi(match):
 
 * `prefix` - a boolean which defaults to `True`. When true, the command pattern is only attempted to match when the message line starts with the prefix defined in the settings of the bot. This is useful for commands which are very bot-like (in contrary to commands which look and behave like natural language). Using a boolean and a setting allows the same command to be triggered in different ways, depending on the settings of the bot which installed the command package.
 
+* `raw` - a boolean which defaults to `False`. When true, the raw input line sent from the server is used for matching the pattern, instead of the message. Useful for matching lines which are not a message from an user, such as nick or topic changes.
+
 #### Messaging from a command
 
 Messaging from inside the function which makes up the command is as easy as can be for simple use cases, but can be done in numerous ways for the more complex situations.
@@ -134,7 +136,6 @@ def raw(match):
   
 ### To do
 
-* Ability to process raw lines through custom commands
 * Figure out how to do translation of messages through the `Match.msg` function.
 * Add timers
 * Add a command module which keeps track of channels joined and users in them which other commands can use.

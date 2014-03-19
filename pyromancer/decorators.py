@@ -14,6 +14,7 @@ class command(object):
         self.patterns = [re.compile(p) for p in patterns]
 
         self.use_prefix = kwargs.get('prefix', True)
+        self.raw = kwargs.get('raw', False)
 
     def __call__(self, fn):
 
@@ -26,18 +27,18 @@ class command(object):
         return wrapper
 
     def match(self, line, connection, settings):
-        if not line.usermsg:
+        if not line.usermsg and not self.raw:
             return
 
+        input = line.full_msg if not self.raw else line.raw
+
         if self.use_prefix:
-            if not line.full_msg.startswith(settings.prefix):
+            if not input.startswith(settings.prefix):
                 return
 
             # todo: add support for tuple of prefixes; this line currently
             # prohibits that support.
-            input = line.full_msg[len(settings.prefix):]
-        else:
-            input = line.full_msg
+            input = input[len(settings.prefix):]
 
         m = None
         for pattern in self.patterns:
