@@ -43,19 +43,17 @@ class Pyromancer(object):
     def find_commands(self):
         self.commands = []
 
-        for m in self.settings.packages:
-            package, submodule = m.split('.', 1)
+        for package in self.settings.packages:
+            module = importlib.import_module('{}.commands'.format(package))
 
-            if not package:
-                package = 'pyromancer'
+            modules = [('', module,)]
+            modules.extend(inspect.getmembers(module, inspect.ismodule))
 
-            module = importlib.import_module(
-                '{}.commands.{}'.format(package, submodule))
+            for name, module in modules:
+                functions = inspect.getmembers(module, inspect.isfunction)
 
-            functions = inspect.getmembers(module, inspect.isfunction)
-
-            self.commands.extend(f for fn, f in functions
-                                 if hasattr(f, 'command'))
+                self.commands.extend(f for fn, f in functions
+                                     if hasattr(f, 'command'))
 
 
 class Settings(object):

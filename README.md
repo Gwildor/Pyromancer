@@ -29,15 +29,13 @@ File layout:
 
 ```
 test/
-    commands/
-        __init__.py
-        test_commands.py
     __init__.py
+    commands.py
     settings.py
 init.py
 ```
 
-test_commands.py:
+commands.py:
 
 ```python
 from pyromancer.decorators import command
@@ -54,7 +52,9 @@ On IRC:
 <Bot> Bye everyone!
 ```
 
-Pyromancer scans the modules in the settings automatically for functions decorated using the commands decorator, so all your commands in `test_commands.py` are used automatically.
+Pyromancer scans the modules in the settings automatically for functions decorated using the commands decorator, so all your commands in `commands.py` are used automatically.
+
+You can also create a directory named `commands` with submodules containing the commands. Just make sure that you import either the modules or all of the commands in the `__init__.py` file.
 
 #### The `command` decorator
 
@@ -139,8 +139,7 @@ def raw(match):
 * Figure out how to do translation of messages through the `Match.msg` function.
 * Add timers
 * Add a command module which keeps track of channels joined and users in them which other commands can use.
-* Redo commands loading so you can use `commands.py` for custom commands instead of a mandatory `commands` directory.
-* Redo package loading so you just have to specify the package name and it loads the commands and any future things like settings.
+* Figure out a way to disable commands or command modules through the settings, such as disabling the built-in commands.
 
 ### Changelist
 

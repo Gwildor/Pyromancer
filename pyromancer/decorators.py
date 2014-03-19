@@ -33,12 +33,12 @@ class command(object):
         input = line.full_msg if not self.raw else line.raw
 
         if self.use_prefix:
-            if not input.startswith(settings.prefix):
+            if not input.startswith(settings.command_prefix):
                 return
 
             # todo: add support for tuple of prefixes; this line currently
             # prohibits that support.
-            input = input[len(settings.prefix):]
+            input = input[len(settings.command_prefix):]
 
         m = None
         for pattern in self.patterns:
