@@ -11,7 +11,9 @@ class command(object):
         if not isinstance(patterns, list):
             patterns = [patterns]
 
-        self.patterns = [re.compile(p) for p in patterns]
+        flags = kwargs.get('flags', 0)
+        self.patterns = [re.compile(p, flags) if isinstance(p, str) else p
+                         for p in patterns]
 
         self.use_prefix = kwargs.get('prefix', True)
         self.raw = kwargs.get('raw', False)
