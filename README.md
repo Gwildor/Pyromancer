@@ -144,6 +144,16 @@ def raw(match):
 
 ### Changelist
 
+#### 0.3 - 2014-03-22
+
+* Change settings to be a Python module instead of a dictionary.
+* Change package loading.
+* Enable the commands from the package of which the settings are in by default.
+* Add ability to process raw input lines.
+* Add option to use precompiled regular expressions in the command decorator.
+* Add option to pass flags for compiling the regular expressions in the command decorator.
+* Fix returning message from command not working.
+
 #### 0.2 - 2014-03-14
 
 * Add tests
