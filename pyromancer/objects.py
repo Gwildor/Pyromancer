@@ -63,12 +63,14 @@ class Settings(object):
         self.packages = self.main_settings.packages
         self.package_settings = {}
 
-        if 'pyromancer' not in self.packages:
-            self.packages.append('pyromancer')
-
         for package in self.packages:
             self.package_settings[package] = importlib.import_module(
                 '{}.settings'.format(package))
+
+        self.global_settings = None
+        if 'pyromancer' not in self.packages:
+            self.global_settings = importlib.import_module(
+                'pyromancer.settings')
 
     def __getattr__(self, item):
         if hasattr(self.main_settings, item):
@@ -78,7 +80,10 @@ class Settings(object):
             if hasattr(self.package_settings[package], item):
                 return getattr(self.package_settings[package], item)
 
-        raise AttributeError('No such setting {} found in any of the '
+        if hasattr(self.global_settings, item):
+            return getattr(self.global_settings, item)
+
+        raise AttributeError('No such setting "{}" found in any of the '
                              'installed packages'.format(item))
 
 
