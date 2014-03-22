@@ -44,16 +44,34 @@ class Pyromancer(object):
         self.commands = []
 
         for package in self.settings.packages:
-            module = importlib.import_module('{}.commands'.format(package))
+            if isinstance(package, tuple):
+                package_settings = package[1]
+                package = package[0]
+            else:
+                package_settings = {}
+
+            ignored = package_settings.get('disabled_commands', [])
+            ignored = ['{}.{}'.format(package, i) if not i.startswith(package)
+                       else i for i in ignored]
+
+            module_name = '{}.commands'.format(package)
+            if module_name in ignored:
+                continue
+
+            module = importlib.import_module(module_name)
 
             modules = [('', module,)]
             modules.extend(inspect.getmembers(module, inspect.ismodule))
 
             for name, module in modules:
-                functions = inspect.getmembers(module, inspect.isfunction)
+                if module.__name__ in ignored:
+                    continue
 
-                self.commands.extend(f for fn, f in functions
-                                     if hasattr(f, 'command'))
+                functions = inspect.getmembers(module, inspect.isfunction)
+                self.commands.extend(
+                    f for fn, f in functions if
+                    hasattr(f, 'command') and '{}.{}'.format(
+                        module.__name__, fn) not in ignored)
 
 
 class Settings(object):
@@ -64,6 +82,9 @@ class Settings(object):
         self.package_settings = {}
 
         for package in self.packages:
+            if isinstance(package, tuple):
+                package = package[0]
+
             self.package_settings[package] = importlib.import_module(
                 '{}.settings'.format(package))
 
@@ -77,6 +98,9 @@ class Settings(object):
             return getattr(self.main_settings, item)
 
         for package in self.packages:
+            if isinstance(package, tuple):
+                package = package[0]
+
             if hasattr(self.package_settings[package], item):
                 return getattr(self.package_settings[package], item)
 
