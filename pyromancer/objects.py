@@ -78,7 +78,7 @@ class Settings(object):
 
     def __init__(self, path):
         self.main_settings = importlib.import_module(path)
-        self.packages = self.main_settings.packages
+        self.packages = getattr(self.main_settings, 'packages', [])
         self.package_settings = {}
 
         for package in self.packages:
