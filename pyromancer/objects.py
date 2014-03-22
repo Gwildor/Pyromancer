@@ -77,16 +77,24 @@ class Pyromancer(object):
 class Settings(object):
 
     def __init__(self, path):
-        self.main_settings = importlib.import_module(path)
-        self.packages = getattr(self.main_settings, 'packages', [])
+        main_settings = importlib.import_module(path)
+        self.packages = getattr(main_settings, 'packages', [])
         self.package_settings = {}
+        self.package_name, _ = path.split('.', 1)
+
+        if self.package_name not in self.packages:
+            self.packages.insert(0, self.package_name)
 
         for package in self.packages:
             if isinstance(package, tuple):
                 package = package[0]
 
-            self.package_settings[package] = importlib.import_module(
-                '{}.settings'.format(package))
+            if package == self.package_name:
+                module = main_settings
+            else:
+                module = importlib.import_module('{}.settings'.format(package))
+
+            self.package_settings[package] = module
 
         self.global_settings = None
         if 'pyromancer' not in self.packages:
@@ -94,9 +102,6 @@ class Settings(object):
                 'pyromancer.settings')
 
     def __getattr__(self, item):
-        if hasattr(self.main_settings, item):
-            return getattr(self.main_settings, item)
-
         for package in self.packages:
             if isinstance(package, tuple):
                 package = package[0]
