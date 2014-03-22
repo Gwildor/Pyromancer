@@ -21,7 +21,7 @@ encoding = 'ISO-8859-1'
 ```
 
 ### Custom commands
-Writing own commands is fairly simple. Create a folder which will be the package name, with a folder named "commands" in it and a module to hold the commands in there. In your module, you can register functions to be a command with the built-in command decorator. After that you need to register it in your settings, and you can use it.
+Writing own commands is fairly simple. Create a folder which will be the package name, with a file named `commands.py` in it to hold the commands. In `commands.py`, you can register functions to be a command with the built-in command decorator.
 
 #### Example
 
@@ -40,6 +40,7 @@ commands.py:
 ```python
 from pyromancer.decorators import command
 
+
 @command(r'bye (.*)')
 def bye(match):
     return 'Bye {m[1]}!'
@@ -48,11 +49,11 @@ def bye(match):
 On IRC:
 
 ```
-<User> bye everyone
+<User> !bye everyone
 <Bot> Bye everyone!
 ```
 
-Pyromancer scans the modules in the settings automatically for functions decorated using the commands decorator, so all your commands in `commands.py` are used automatically.
+Pyromancer scans automatically for functions decorated using the commands decorator, so all your commands in `commands.py` are used automatically.
 
 You can also create a directory named `commands` with submodules containing the commands. Just make sure that you import either the modules or all of the commands in the `__init__.py` file.
 
