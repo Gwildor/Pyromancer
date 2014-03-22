@@ -57,10 +57,8 @@ class command(object):
 
         if isinstance(result, (list, GeneratorType)):
             messages = result
-        elif isinstance(result, tuple):
-            messages = [result]
         else:
-            messages = []
+            messages = [result]
 
         for msg in messages:
             if isinstance(msg, tuple):
