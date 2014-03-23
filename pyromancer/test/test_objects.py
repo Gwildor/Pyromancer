@@ -5,16 +5,16 @@ from pyromancer.test.decorators import mock_connection
 
 
 def test_user_with_nick():
-    user_str = u'Abc09_-\\[]{}^`|!RealName@some.host'
+    user_str = 'Abc09_-\\[]{}^`|!RealName@some.host'
     user = User(user_str)
 
     assert user.host == 'some.host'
     assert user.name == 'RealName'
-    assert user.nick == u'Abc09_-\\[]{}^`|'
+    assert user.nick == 'Abc09_-\\[]{}^`|'
 
 
 def test_user_without_nick():
-    user_str = u'some.host'
+    user_str = 'some.host'
     user = User(user_str)
 
     assert user.host == 'some.host'
