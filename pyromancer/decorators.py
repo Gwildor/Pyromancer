@@ -29,6 +29,16 @@ class command(object):
         return wrapper
 
     def match(self, line, connection, settings):
+        m = self.matches(line, settings)
+
+        if m:
+            match = Match(m, line, connection)
+            result = self.function(match)
+
+            if result is not None:
+                self.send_messages(result, match)
+
+    def matches(self, line, settings):
         if not line.usermsg and not self.raw:
             return
 
@@ -42,25 +52,17 @@ class command(object):
             # prohibits that support.
             input = input[len(settings.command_prefix):]
 
-        m = None
         for pattern in self.patterns:
             m = re.search(pattern, input)
 
             if m:
-                break
+                return m
 
-        if not m:
-            return
-
-        match = Match(m, line, connection)
-        result = self.function(match)
-
+    def send_messages(self, result, match):
         if isinstance(result, (list, GeneratorType)):
             messages = result
-        elif result is not None:
-            messages = [result]
         else:
-            messages = []
+            messages = [result]
 
         for msg in messages:
             if isinstance(msg, tuple):
