@@ -135,12 +135,15 @@ def raw(match):
 
   [1]: https://pypi.python.org/pypi/irc
   
+### Support
+
+Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3.
+
 ### To do
 
 * Figure out how to do translation of messages through the `Match.msg` function.
 * Add timers
 * Add a command module which keeps track of channels joined and users in them which other commands can use.
-* Figure out a way to disable commands or command modules through the settings, such as disabling the built-in commands.
 
 ### Changelist
 

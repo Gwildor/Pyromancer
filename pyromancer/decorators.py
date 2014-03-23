@@ -66,7 +66,8 @@ class command(object):
 
         for msg in messages:
             if isinstance(msg, tuple):
-                msg, *args, kwargs = msg
+                last = len(msg) - 1
+                msg, args, kwargs = msg[0], list(msg[1:last]), msg[last]
 
                 # If the result is (msg, positional argument,), make sure it
                 # still works correctly as expected for the formatting.
