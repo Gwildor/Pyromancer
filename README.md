@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Gwildor/Pyromancer.svg)](https://travis-ci.org/Gwildor/Pyromancer) [![Coverage Status](https://coveralls.io/repos/Gwildor/Pyromancer/badge.png)](https://coveralls.io/r/Gwildor/Pyromancer)
+
 Simple framework for creating IRC bots.
 
 ### Example

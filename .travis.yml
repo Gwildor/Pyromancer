@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+# command to install dependencies
+install: "pip install irc pytest-cov coveralls"
+# command to run tests
+script: "py.test --cov-report term-missing --cov pyromancer pyromancer/test"
+after_success:
+  coveralls
