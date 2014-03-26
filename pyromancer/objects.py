@@ -197,7 +197,14 @@ class Match(object):
                 self.line.target
 
         if not raw:
-            message = message.format(*args, m=self, **kwargs)
+            if len(args) == 1 and isinstance(args[0], list):
+                # Message might be: msg, [arg1, arg2], kwargs
+                try:
+                    message = message.format(*args[0], m=self, **kwargs)
+                except IndexError:
+                    message = message.format(*args, m=self, **kwargs)
+            else:
+                message = message.format(*args, m=self, **kwargs)
 
         self.connection.msg(target, message)
 
