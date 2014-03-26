@@ -58,13 +58,13 @@ def test_match_getitem():
 
 @mock_connection
 def test_match_msg_with_privmsg(c):
-    line = Line(':John!JDoe@some.shot PRIVMSG #Chan :Some cool message')
+    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message')
     match = Match(None, line, c)
     match.msg('A {} reply', 'cool')
 
     assert c.outbox[0] == 'PRIVMSG #Chan :A cool reply'
 
-    line = Line(':John!JDoe@some.shot PRIVMSG TestBot :Some cool message')
+    line = Line(':John!JDoe@some.host PRIVMSG TestBot :Some cool message')
     match = Match(None, line, c)
     match.msg('A {} reply', 'cool')
 

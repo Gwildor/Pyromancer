@@ -8,3 +8,7 @@ class MockConnection(Connection):
 
     def write(self, data):
         self.outbox.append(data)
+
+    @property
+    def last(self):
+        return self.outbox[-1:][0]
