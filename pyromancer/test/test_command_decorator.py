@@ -1,6 +1,9 @@
+import re
+
 from pyromancer.decorators import command
 from pyromancer.objects import Match, Line
 from pyromancer.test.decorators import mock_connection
+from pyromancer.test.mock_objects import MockObject
 
 MESSAGES = [
     (('Hello {}', 'world'), 'Hello world'),
@@ -54,3 +57,31 @@ def test_command_messaging_yielding(c):
 
     for index, (msg, expected) in enumerate(MESSAGES):
         assert c.outbox[index] == 'PRIVMSG #Chan :{}'.format(expected)
+
+
+def test_command_matches_patterns():
+    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message')
+    settings = MockObject(command_prefix='!')
+
+    instance = command(r'^Some', prefix=False)
+    assert bool(instance.matches(line, settings)) is True
+
+    instance = command(r'message$', prefix=False)
+    assert bool(instance.matches(line, settings)) is True
+
+    instance = command(r'^Some cool message$', prefix=False)
+    assert bool(instance.matches(line, settings)) is True
+
+    instance = command(r'mESsagE', prefix=False, flags=re.IGNORECASE)
+    assert bool(instance.matches(line, settings)) is True
+
+    instance = command(r'Some')
+    assert bool(instance.matches(line, settings)) is False
+
+    settings = MockObject(command_prefix='S')
+
+    instance = command(r'^ome')
+    assert bool(instance.matches(line, settings)) is True
+
+    instance = command(r'cool')
+    assert bool(instance.matches(line, settings)) is True
