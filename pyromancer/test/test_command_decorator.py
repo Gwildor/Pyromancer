@@ -6,9 +6,9 @@ from pyromancer.test.decorators import mock_connection
 from pyromancer.test.mock_objects import MockObject
 
 MESSAGES = [
+    ('Hello world', 'Hello world'),
     (('Hello {}', 'world'), 'Hello world'),
     (('Hello {} and {}', 'world', 'Mars'), 'Hello world and Mars'),
-    (('Hello {}', ['world']), 'Hello world'),
     (('Hello {} and {}', ['world', 'Mars']), 'Hello world and Mars'),
     (('Hello {sphere}', {'sphere': 'world'}), 'Hello world'),
     (('Hello {} and {red_one}', 'world', {'red_one': 'Mars'}),
@@ -17,6 +17,7 @@ MESSAGES = [
      'Hello world, moon and Mars'),
     (('Hello {}, {} and {red_one}', ['world', 'moon'], {'red_one': 'Mars'}),
      'Hello world, moon and Mars'),
+    (('Hello {}', ['world', 'moon']), "Hello ['world', 'moon']"),
 ]
 
 
