@@ -19,14 +19,9 @@ class command(object):
         self.raw = kwargs.get('raw', False)
 
     def __call__(self, fn):
-
-        @wraps(fn)
-        def wrapper(*fn_args, **fn_kwargs):
-            return fn(*fn_args, **fn_kwargs)
-
-        wrapper.command = self
-        self.function = wrapper
-        return wrapper
+        fn.command = self
+        self.function = fn
+        return fn
 
     def match(self, line, connection, settings):
         m = self.matches(line, settings)
