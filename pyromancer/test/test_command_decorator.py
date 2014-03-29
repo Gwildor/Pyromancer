@@ -90,6 +90,14 @@ def test_command_matches_patterns():
     instance = command(r'cool')
     assert bool(instance.matches(line, settings)) is True
 
+    line = Line(':irc.example.net 376 A :End of MOTD command')
+
+    instance = command(r'example', prefix=False)
+    assert bool(instance.matches(line, settings)) is False
+
+    instance = command(r'example', raw=True, prefix=False)
+    assert bool(instance.matches(line, settings)) is True
+
 
 def test_command_matches_code():
     with pytest.raises(CommandException):
