@@ -13,32 +13,38 @@ class Pyromancer(object):
         self.settings = Settings(settings_path)
         self.find_commands()
 
-    def connect(self):
-        return Connection(self.settings.host, self.settings.port,
-                          self.settings.encoding)
-
     def run(self):
-        self.connection = self.connect()
-        self.online = True
+        self.connect()
+        self.listen()
+
+    def connect(self):
+        self.connection = Connection(self.settings.host, self.settings.port,
+                                     self.settings.encoding)
 
         self.connection.write('NICK {}\n'.format(self.settings.nick))
         self.connection.write('USER {0} {1} {1} :{2}\n'.format(
             self.settings.nick, self.settings.host, self.settings.real_name))
 
+    def listen(self):
+        self.online = True
         ticks = self.settings.ticks
+
         while self.online:
             self.connection.read()
 
             for line in self.connection.buffer.lines():
-                line = Line(line)
-
-                if line[0] == 'PING':
-                    self.connection.write('PONG {}\n'.format(line[1]))
-
-                for c in self.commands:
-                    c.command.match(line, self.connection, self.settings)
+                self.process(line)
 
             time.sleep(1.0 / ticks)
+
+    def process(self, line):
+        line = Line(line)
+
+        if line[0] == 'PING':
+            self.connection.write('PONG {}\n'.format(line[1]))
+
+        for c in self.commands:
+            c.command.match(line, self.connection, self.settings)
 
     def find_commands(self):
         self.commands = []
