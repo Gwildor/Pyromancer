@@ -1,6 +1,7 @@
 import datetime
 import importlib
 import inspect
+import re
 import socket
 import time
 
@@ -214,6 +215,8 @@ class Match(object):
 
         self.connection.msg(target, message)
 
+CODE_PATTERN = re.compile(r'\d{3}')
+
 
 class Line(object):
 
@@ -247,3 +250,5 @@ class Line(object):
             self.target = self.parts[2]
             self.pm = self.target[0] != '#'
             self.full_msg = ' '.join(self.parts[3:])[1:]
+        elif CODE_PATTERN.match(self.parts[1]):
+            self.code = int(self.parts[1])

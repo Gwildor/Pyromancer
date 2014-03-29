@@ -1,12 +1,16 @@
 import re
 from types import GeneratorType
 
+from pyromancer.exceptions import CommandException
 from pyromancer.objects import Match
 
 
 class command(object):
 
-    def __init__(self, patterns, *args, **kwargs):
+    def __init__(self, patterns=None, *args, **kwargs):
+        if patterns is None:
+            patterns = []
+
         if not isinstance(patterns, list):
             patterns = [patterns]
 
@@ -16,6 +20,18 @@ class command(object):
 
         self.use_prefix = kwargs.get('prefix', True)
         self.raw = kwargs.get('raw', False)
+        self.code = kwargs.get('code')
+
+        if self.code is not None and not isinstance(self.code, int):
+            raise CommandException('The code argument must be an integer.')
+
+        if self.code:
+            self.raw = True
+
+        if not self.code and len(patterns) == 0:
+            raise CommandException(
+                'Either a (a list of) pattern(s) or a code '
+                'must be specified as argument for the command decorator.')
 
     def __call__(self, fn):
         fn.command = self
@@ -35,6 +51,9 @@ class command(object):
     def matches(self, line, settings):
         if not line.usermsg and not self.raw:
             return
+
+        if self.code and getattr(line, 'code', None) == self.code:
+            return True
 
         input = line.full_msg if not self.raw else line.raw
 

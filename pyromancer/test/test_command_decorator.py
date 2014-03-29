@@ -1,6 +1,9 @@
 import re
 
+import pytest
+
 from pyromancer.decorators import command
+from pyromancer.exceptions import CommandException
 from pyromancer.objects import Match, Line
 from pyromancer.test.decorators import mock_connection
 from pyromancer.test.mock_objects import MockObject
@@ -86,3 +89,22 @@ def test_command_matches_patterns():
 
     instance = command(r'cool')
     assert bool(instance.matches(line, settings)) is True
+
+
+def test_command_matches_code():
+    with pytest.raises(CommandException):
+        command()
+
+    with pytest.raises(CommandException):
+        command(code='Foo')
+
+    settings = MockObject(command_prefix='!')
+    instance = command(code=376)
+
+    line = Line(':irc.example.net 376 A :End of MOTD command')
+    assert line.code == 376
+    assert bool(instance.matches(line, settings)) is True
+
+    line = Line(':irc.example.net 375 A :- irc.example.net message of the day')
+    assert line.code == 375
+    assert bool(instance.matches(line, settings)) is False
