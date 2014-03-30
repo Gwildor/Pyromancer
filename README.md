@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/Gwildor/Pyromancer.svg)](https://travis-ci.org/Gwildor/Pyromancer) [![Coverage Status](https://coveralls.io/repos/Gwildor/Pyromancer/badge.png)](https://coveralls.io/r/Gwildor/Pyromancer)
+[![Build Status](http://img.shields.io/travis/Gwildor/Pyromancer.svg)](https://travis-ci.org/Gwildor/Pyromancer)
+[![Latest Version](http://img.shields.io/pypi/v/Pyromancer.svg)](https://pypi.python.org/pypi/Pyromancer)
+[![Coverage Status](http://img.shields.io/coveralls/Gwildor/Pyromancer.svg)](https://coveralls.io/r/Gwildor/Pyromancer)
 
 Simple framework for creating IRC bots.
 
