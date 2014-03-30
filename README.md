@@ -149,6 +149,14 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 
 ### Changelist
 
+#### 0.4 - 2014-03-30
+
+* Add support for Python 2.7.
+* Add more tests.
+* Fix messaging with positional arguments given as a list not working.
+* Add ability to create commands for raw code lines by specifying a code to match.
+* Add ability to do easy message formatting for colored, underlined and bold text.
+
 #### 0.3 - 2014-03-22
 
 * Change settings to be a Python module instead of a dictionary.
@@ -161,7 +169,7 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 
 #### 0.2 - 2014-03-14
 
-* Add tests
+* Add tests.
 * Add multiple and easier ways to send messages from a command.
 * Add support for multiple patterns for the same command.
 * Add a configurable command prefix setting for the more bot-like commands.
@@ -170,4 +178,4 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 
 #### 0.1 - 2013-11-17
 
-* Initial release
+* Initial release.
