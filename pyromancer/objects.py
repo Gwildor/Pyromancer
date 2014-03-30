@@ -204,12 +204,20 @@ class Match(object):
                 self.line.target
 
         if not raw:
+            kw = {
+                'm': self,
+                'b': chr(2),
+                'k': chr(3),
+                'u': chr(31),
+            }
+            kw.update(kwargs)
+
             try:
-                message = message.format(*args, m=self, **kwargs)
+                message = message.format(*args, **kw)
             except IndexError:
                 if len(args) == 1 and isinstance(args[0], list):
                     # Message might be: msg, [arg1, arg2], kwargs
-                    message = message.format(*args[0], m=self, **kwargs)
+                    message = message.format(*args[0], **kw)
                 else:
                     raise
 
