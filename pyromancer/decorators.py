@@ -1,8 +1,9 @@
+import datetime
 import re
 from types import GeneratorType
 
 from pyromancer.exceptions import CommandException
-from pyromancer.objects import Match
+from pyromancer.objects import Match, Timer, _TIMERS
 
 
 class command(object):
@@ -79,15 +80,44 @@ class command(object):
 
         for msg in messages:
             if isinstance(msg, tuple):
+                msg_tuple = msg
+
                 last = len(msg) - 1
                 msg, args, kwargs = msg[0], list(msg[1:last]), msg[last]
+
+                timer = False
+                if isinstance(msg, (datetime.datetime, datetime.timedelta)):
+                    scheduled = msg
+                    msg = msg_tuple[1:]
+                    last = len(msg) - 1
+                    t, msg, args, kwargs = (msg[0], msg[1], list(msg[2:last]),
+                                            msg[last])
+
+                    timer = True
 
                 # If the result is (msg, positional argument,), make sure it
                 # still works correctly as expected for the formatting.
                 if not isinstance(kwargs, dict):
                     args.append(kwargs)
                     kwargs = {}
+
+                if timer:
+                    msg = Timer(scheduled, msg, *args, target=t, **kwargs)
             else:
                 args, kwargs = [], {}
 
-            match.msg(msg, *args, **kwargs)
+            if isinstance(msg, Timer):
+                _TIMERS.append(msg)
+            else:
+                match.msg(msg, *args, **kwargs)
+
+
+class timer(object):
+
+    def __init__(self, *args, **kwargs):
+        self.initargs = args
+        self.initkwargs = kwargs
+
+    def __call__(self, fn):
+        fn.timer = Timer(*self.initargs, function=fn, **self.initkwargs)
+        return fn

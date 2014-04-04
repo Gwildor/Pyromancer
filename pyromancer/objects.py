@@ -1,11 +1,15 @@
 import datetime
 import importlib
-import inspect
 import re
 import socket
 import time
+from types import GeneratorType
 
 from irc.buffer import DecodingLineBuffer
+
+from pyromancer import utils
+
+_TIMERS = []
 
 
 class Pyromancer(object):
@@ -13,6 +17,7 @@ class Pyromancer(object):
     def __init__(self, settings_path):
         self.settings = Settings(settings_path)
         self.find_commands()
+        self.find_timers()
 
     def run(self):
         self.connect()
@@ -22,6 +27,8 @@ class Pyromancer(object):
         self.connection = Connection(self.settings.host, self.settings.port,
                                      self.settings.encoding)
 
+        self.online = True
+        self.connect_time = datetime.datetime.now()
         self.connection.write('NICK {}\n'.format(self.settings.nick))
         self.connection.write('USER {0} {1} {1} :{2}\n'.format(
             self.settings.nick, self.settings.host, self.settings.real_name))
@@ -35,6 +42,9 @@ class Pyromancer(object):
 
             for line in self.connection.buffer.lines():
                 self.process(line)
+
+            for timer in _TIMERS:
+                timer.match(self, self.connection)
 
             time.sleep(1.0 / ticks)
 
@@ -50,35 +60,16 @@ class Pyromancer(object):
     def find_commands(self):
         self.commands = []
 
-        for package in self.settings.packages:
-            if isinstance(package, tuple):
-                package_settings = package[1]
-                package = package[0]
-            else:
-                package_settings = {}
+        utils.find_functions(
+            self.settings.packages, self.commands, 'commands',
+            'disabled_commands', when=lambda f: hasattr(f, 'command'))
 
-            ignored = package_settings.get('disabled_commands', [])
-            ignored = ['{}.{}'.format(package, i) if not i.startswith(package)
-                       else i for i in ignored]
+    def find_timers(self):
+        _TIMERS.clear()
 
-            module_name = '{}.commands'.format(package)
-            if module_name in ignored:
-                continue
-
-            module = importlib.import_module(module_name)
-
-            modules = [('', module,)]
-            modules.extend(inspect.getmembers(module, inspect.ismodule))
-
-            for name, module in modules:
-                if module.__name__ in ignored:
-                    continue
-
-                functions = inspect.getmembers(module, inspect.isfunction)
-                self.commands.extend(
-                    f for fn, f in functions if
-                    hasattr(f, 'command') and '{}.{}'.format(
-                        module.__name__, fn) not in ignored)
+        utils.find_functions(
+            self.settings.packages, _TIMERS, 'timers', 'disabled_timers',
+            when=lambda f: hasattr(f, 'timer'), ret=lambda f: f.timer)
 
 
 class Settings(object):
@@ -126,8 +117,9 @@ class Settings(object):
 class Connection(object):
 
     def __init__(self, host, port, encoding='utf8'):
-        self.socket = socket.socket()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((host, port))
+        self.socket.setblocking(False)
         self.encoding = encoding
 
         self.buffer = DecodingLineBuffer()
@@ -137,7 +129,10 @@ class Connection(object):
         self.socket.send('{}\n'.format(data).encode(self.encoding))
 
     def read(self, bytes=4096):
-        self.buffer.feed(self.socket.recv(bytes))
+        try:
+            self.buffer.feed(self.socket.recv(bytes))
+        except BlockingIOError:
+            pass
 
     def msg(self, target, msg):
         self.write('PRIVMSG {} :{}'.format(target,  msg))
@@ -260,3 +255,79 @@ class Line(object):
             self.full_msg = ' '.join(self.parts[3:])[1:]
         elif CODE_PATTERN.match(self.parts[1]):
             self.code = int(self.parts[1])
+
+
+class Timer(object):
+
+    def __init__(self, scheduled, msg=None, *args, **kwargs):
+        self.scheduled = scheduled
+        self.direct = kwargs.pop('direct', False)
+        self.remaining = kwargs.pop('count', 0)
+        self.function = kwargs.pop('function', None)
+        target = kwargs.pop('target', None)
+
+        self.msg_tuple = None
+        if target is not None and msg is not None:
+            self.msg_tuple = (target, msg, args, kwargs,)
+
+    def match(self, pyromancer, connection):
+        if self.matches(pyromancer):
+            self.last_time = datetime.datetime.now()
+            match = Match(None, None, connection)
+
+            if self.function is not None:
+                result = self.function(match)
+
+                if result is not None:
+                    self.send_messages(result, match)
+
+            if self.msg_tuple is not None:
+                self.send_messages(self.msg_tuple, match)
+
+            if self.remaining > 0:
+                self.remaining -= 1
+
+                if self.remaining == 0:
+                    _TIMERS.remove(self)
+
+    def matches(self, pyromancer):
+        if self.direct:
+            self.direct = False
+            return True
+
+        next_time = None
+        if isinstance(self.scheduled, datetime.datetime):
+            next_time = self.scheduled
+
+        if isinstance(self.scheduled, datetime.timedelta):
+            if hasattr(self, 'last_time'):
+                next_time = self.last_time + self.scheduled
+            else:
+                next_time = pyromancer.connect_time + self.scheduled
+
+        if next_time is not None:
+            return datetime.datetime.now() >= next_time
+
+        return False
+
+    def send_messages(self, result, match):
+        if isinstance(result, (list, GeneratorType)):
+            messages = result
+        else:
+            messages = [result]
+
+        for msg in messages:
+            if not isinstance(msg, tuple):
+                # raise error
+                pass
+            last = len(msg) - 1
+            t, msg, args, kwargs = (msg[0], msg[1], list(msg[2:last]),
+                                    msg[last])
+
+            # If the result is (msg, positional argument,), make sure it
+            # still works correctly as expected for the formatting.
+            if not isinstance(kwargs, dict):
+                args.append(kwargs)
+                kwargs = {}
+
+            match.msg(msg, *args, target=t, **kwargs)
