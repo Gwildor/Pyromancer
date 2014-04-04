@@ -23,7 +23,10 @@ def find_functions(packages, into, submodule, ignored=None,
         if module_name in ignored:
             continue
 
-        module = importlib.import_module(module_name)
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
 
         modules = [('', module,)]
         modules.extend(inspect.getmembers(module, inspect.ismodule))
