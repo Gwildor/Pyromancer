@@ -7,3 +7,4 @@ real_name = nick
 ticks = 10
 packages = []
 command_prefix = '!'
+database = None

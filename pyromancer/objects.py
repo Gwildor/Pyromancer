@@ -16,6 +16,7 @@ class Pyromancer(object):
 
     def __init__(self, settings_path):
         self.settings = Settings(settings_path)
+        self.setup_database()
         self.find_commands()
         self.find_timers()
 
@@ -70,6 +71,28 @@ class Pyromancer(object):
         utils.find_functions(
             self.settings.packages, _TIMERS, 'timers', 'disabled_timers',
             when=lambda f: hasattr(f, 'timer'), ret=lambda f: f.timer)
+
+    def setup_database(self):
+        if self.settings.database:
+            from sqlalchemy import create_engine
+
+            from pyromancer.database import Session, Base
+
+            engine = create_engine(self.settings.database)
+            Session.configure(bind=engine)
+
+            for package in self.settings.packages:
+                if isinstance(package, tuple):
+                    package = package[0]
+
+                module_name = '{}.models'.format(package)
+
+                try:
+                    importlib.import_module(module_name)
+                except ImportError:
+                    continue
+
+            Base.metadata.create_all(bind=engine)
 
 
 class Settings(object):
