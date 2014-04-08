@@ -3,7 +3,6 @@ import importlib
 import re
 import socket
 import time
-from types import GeneratorType
 
 from irc.buffer import DecodingLineBuffer
 
@@ -334,23 +333,8 @@ class Timer(object):
         return False
 
     def send_messages(self, result, match):
-        if isinstance(result, (list, GeneratorType)):
-            messages = result
-        else:
-            messages = [result]
-
-        for msg in messages:
-            if not isinstance(msg, tuple):
-                # raise error
-                pass
-            last = len(msg) - 1
-            t, msg, args, kwargs = (msg[0], msg[1], list(msg[2:last]),
-                                    msg[last])
-
-            # If the result is (msg, positional argument,), make sure it
-            # still works correctly as expected for the formatting.
-            if not isinstance(kwargs, dict):
-                args.append(kwargs)
-                kwargs = {}
-
-            match.msg(msg, *args, target=t, **kwargs)
+        for r in utils.process_messages(result, with_target=True):
+            if isinstance(r, Timer):
+                _TIMERS.append(r)
+            else:
+                match.msg(r[1], *r[2], target=r[0], **r[3])

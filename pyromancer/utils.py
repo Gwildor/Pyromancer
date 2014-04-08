@@ -1,5 +1,7 @@
+import datetime
 import importlib
 import inspect
+from types import GeneratorType
 
 
 def find_functions(packages, into, submodule, ignored=None,
@@ -39,3 +41,51 @@ def find_functions(packages, into, submodule, ignored=None,
             into.extend(
                 ret(f) for fn, f in functions if
                 when(f) and '{}.{}'.format(module.__name__, fn) not in ignored)
+
+
+def process_messages(result, with_target=False):
+    from pyromancer.objects import Timer
+
+    if isinstance(result, (list, GeneratorType)):
+        messages = result
+    else:
+        messages = [result]
+
+    for msg in messages:
+        if isinstance(msg, tuple):
+            msg_tuple = msg
+
+            last = len(msg) - 1
+
+            if with_target:
+                target, msg, args, kwargs = (msg[0], msg[1], list(msg[2:last]),
+                                             msg[last])
+            else:
+                msg, args, kwargs = msg[0], list(msg[1:last]), msg[last]
+
+            timer = False
+            if isinstance(msg, (datetime.datetime, datetime.timedelta)):
+                scheduled = msg
+                msg = msg_tuple[1:]
+                last = len(msg) - 1
+                target, msg, args, kwargs = (msg[0], msg[1], list(msg[2:last]),
+                                             msg[last])
+
+                timer = True
+
+            # If the result is (msg, positional argument,), make sure it
+            # still works correctly as expected for the formatting.
+            if not isinstance(kwargs, dict):
+                args.append(kwargs)
+                kwargs = {}
+
+            if timer:
+                yield Timer(scheduled, msg, *args, target=target, **kwargs)
+                continue
+        else:
+            target, args, kwargs = None, [], {}
+
+        if with_target:
+            yield target, msg, args, kwargs
+        else:
+            yield msg, args, kwargs
