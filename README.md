@@ -131,13 +131,118 @@ def raw(match):
 
 * `raw` - defaults to `False`. When true, no formatting is applied on `message`.
 
+### Timers
+
+You can register timers in a custom `timers` module, or you can create them from inside commands or other timers. When creating or registering a timer, you can either specify a `timedelta` or `datetime` object to schedule the timer. When specifying a timedelta, you can also specify the amount of times the timer should execute, which defaults to infinite. Timers can send messages based on arguments given upon initialization, but also call a callable which in itself can send messages or initialize new timers.
+
+When messaging from a timer, you must always specify a target to send the message to before the message (when returning a message tuple), or with the `target` argument on the `Match` instance when using the `Match.msg` method. Because there is no line which triggered the timer, nothing can be used to decide where to send the message to when the target is not specified.
+
+#### Example of timers through a module
+
+timers.py:
+
+```python
+from datetime import datetime, timedelta
+
+from pyromancer.decorators import timer
+
+
+@timer(timedelta(seconds=3), count=5)
+def say_time(match):
+    return 'User', "It's {}", datetime.now()
+```
+
+#### Example of timers through messaging
+
+commands.py:
+
+```python
+from datetime import datetime, timedelta
+
+from pyromancer.decorators import timer
+
+
+@command(r'start_timer')
+def start_timer(match):
+    return timedelta(seconds=3), 'User', "It's {}", datetime.now()
+```
+
+You can also return a `Timer` instance, or specify a callable as the second item of the returned tuple, which is then called like any function with the `timer` decorator.
+
+### Using a database
+
+  [3]: http://docs.sqlalchemy.org/en/latest/core/engines.html?highlight=create_engine#sqlalchemy.create_engine
+  [4]: http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative.html#sqlalchemy.ext.declarative.declarative_base
+  [5]: http://docs.sqlalchemy.org/en/latest/orm/session.html
+
+To enable the integrated database support, you have to set the `database` setting to a string which holds the URL to the database, as accepted by [SQLAlchemy's create_engine][3] function. Then, in a `models` module, you can import the [declarative base][4] to construct your model, and import the [Session][5] for querying.
+
+#### Example with a simple model and timer
+
+This example creates a table named `test` in a SQLite `test.db` file, and creates an entry with the current date and time every three seconds, and a command which returns the count of entries in the table.
+
+settings.py:
+
+```python
+database = 'sqlite:///test.db'
+```
+
+models.py:
+
+```python
+from sqlalchemy import Column, DateTime, Integer
+
+from pyromancer.database import Base
+
+
+class Test(Base):
+    __tablename__ = 'test'
+
+    id = Column(Integer, primary_key=True)
+    value = Column(DateTime)
+```
+
+timers.py:
+
+```python
+from datetime import datetime, timedelta
+
+from pyromancer.database import Session
+from pyromancer.decorators import timer
+
+from .models import Test
+
+
+@timer(timedelta(seconds=3))
+def hi(match):
+    session = Session()
+    session.add(Test(value=datetime.now()))
+    session.commit()
+```
+
+commands.py:
+
+```python
+from pyromancer.database import Session
+from pyromancer.decorators import command
+
+from .models import Test
+
+
+@command(r'timers')
+def timers(match):
+    session = Session()
+    return 'Timer count: {}', session.query(Test).count()
+```
 
 ### Dependencies
 
 * [irc][1]
+* [SQLAlchemy][2], if you want to enable the use of a database.
 
 
   [1]: https://pypi.python.org/pypi/irc
+  [2]: http://www.sqlalchemy.org
   
 ### Support
 
@@ -146,10 +251,18 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 ### To do
 
 * Figure out how to do translation of messages through the `Match.msg` function.
-* Add timers
 * Add a command module which keeps track of channels joined and users in them which other commands can use.
 
 ### Changelist
+
+#### 1.0 - WIP
+
+* Add timers
+* Add integrated database support
+
+##### Yet to do for 1.0:
+* Pick a license
+* Add keeping track of channels and users
 
 #### 0.4 - 2014-03-30
 
