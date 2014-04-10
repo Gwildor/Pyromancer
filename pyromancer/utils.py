@@ -53,30 +53,26 @@ def process_messages(result, with_target=False):
 
     for msg in messages:
         if isinstance(msg, tuple):
-            msg_tuple = msg
-
-            last = len(msg) - 1
+            timer = False
+            if isinstance(msg[0], (datetime.datetime, datetime.timedelta)):
+                scheduled = msg[0]
+                msg = msg[1:]
+                timer = True
+                with_target = True
 
             if with_target:
-                target, msg, args, kwargs = (msg[0], msg[1], list(msg[2:last]),
-                                             msg[last])
-            else:
-                msg, args, kwargs = msg[0], list(msg[1:last]), msg[last]
+                target = msg[0]
+                msg = msg[1:]
 
-            timer = False
-            if isinstance(msg, (datetime.datetime, datetime.timedelta)):
-                scheduled = msg
-                msg = msg_tuple[1:]
-                last = len(msg) - 1
-                target, msg, args, kwargs = (msg[0], msg[1], list(msg[2:last]),
-                                             msg[last])
-
-                timer = True
+            last = len(msg) - 1
+            msg, args, kwargs = msg[0], list(msg[1:last]), msg[last]
 
             # If the result is (msg, positional argument,), make sure it
             # still works correctly as expected for the formatting.
             if not isinstance(kwargs, dict):
-                args.append(kwargs)
+                if last > 0:
+                    args.append(kwargs)
+
                 kwargs = {}
 
             if timer:

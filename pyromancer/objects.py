@@ -292,6 +292,11 @@ class Timer(object):
         if target is not None and msg is not None:
             self.msg_tuple = (target, msg, args, kwargs,)
 
+    def __eq__(self, other):
+        return (self.scheduled == other.scheduled and
+                self.function == other.function and
+                self.msg_tuple == other.msg_tuple)
+
     def match(self, pyromancer, connection):
         if self.matches(pyromancer):
             self.last_time = datetime.datetime.now()
