@@ -20,7 +20,7 @@ MESSAGES = [
      ('Hello {}, {} and {red_one}', [['world', 'moon']], {'red_one': 'Mars'})),
     (('Hello {}', ['world', 'moon']), ('Hello {}', [['world', 'moon']], {})),
     ((timedelta(seconds=3), 'User', 'Hello world'),
-    Timer(timedelta(seconds=3), 'Hello world', target='User'))
+     Timer(timedelta(seconds=3), 'Hello world', target='User'))
 ]
 
 

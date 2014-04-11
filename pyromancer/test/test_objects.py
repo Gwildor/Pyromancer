@@ -1,7 +1,9 @@
 import re
+import datetime
 
-from pyromancer.objects import User, Line, Match
+from pyromancer.objects import User, Line, Match, Timer
 from pyromancer.test.decorators import mock_connection
+from pyromancer.test.mock_objects import MockObject
 
 
 def test_user_with_nick():
@@ -77,3 +79,27 @@ def test_match_msg_with_privmsg(c):
     match.msg('A {}formatted message', 'mis', raw=True)
 
     assert c.outbox[3] == 'PRIVMSG John :A {}formatted message'
+
+
+def test_timer_matches_function():
+    now = datetime.datetime.now()
+    connect_time = now - datetime.timedelta(seconds=4)
+
+    timer_with_last_time = Timer(datetime.timedelta(seconds=3))
+    timer_with_last_time.last_time = connect_time
+
+    timers = [
+        (Timer(datetime.timedelta(seconds=3)), True),
+        (Timer(datetime.timedelta(seconds=5)), False),
+        (Timer(datetime.timedelta(seconds=5), direct=True), True),
+        (timer_with_last_time, True),
+        (Timer(now - datetime.timedelta(days=1)), True),
+        (Timer(now + datetime.timedelta(days=1)), False),
+        (Timer(now + datetime.timedelta(days=1),
+               direct=True), True),
+    ]
+
+    p = MockObject(connect_time=connect_time)
+
+    for timer, expected in timers:
+        assert timer.matches(p) is expected
