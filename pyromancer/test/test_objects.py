@@ -6,7 +6,7 @@ from pyromancer.test.decorators import mock_connection
 from pyromancer.test.mock_objects import MockObject
 
 
-def test_user_with_nick():
+def test_user_str_parsing():
     user_str = 'Abc09_-\\[]{}^`|!RealName@some.host'
     user = User(user_str)
 
@@ -14,14 +14,10 @@ def test_user_with_nick():
     assert user.name == 'RealName'
     assert user.nick == 'Abc09_-\\[]{}^`|'
 
-
-def test_user_without_nick():
-    user_str = 'some.host'
-    user = User(user_str)
-
-    assert user.host == 'some.host'
+    user = User('AName')
+    assert user.host is None
     assert user.name is None
-    assert user.nick is None
+    assert user.nick == 'AName'
 
 
 def test_line_parsing_with_privmsg():

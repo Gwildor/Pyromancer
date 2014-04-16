@@ -32,6 +32,7 @@ class Pyromancer(object):
         self.connection.write('NICK {}\n'.format(self.settings.nick))
         self.connection.write('USER {0} {1} {1} :{2}\n'.format(
             self.settings.nick, self.settings.host, self.settings.real_name))
+        self.connection.me.nick = self.settings.nick
 
     def listen(self):
         self.online = True
@@ -49,7 +50,7 @@ class Pyromancer(object):
             time.sleep(1.0 / ticks)
 
     def process(self, line):
-        line = Line(line)
+        line = Line(line, self.connection)
 
         if line[0] == 'PING':
             self.connection.write('PONG {}\n'.format(line[1]))
@@ -147,6 +148,20 @@ class Connection(object):
         self.buffer = DecodingLineBuffer()
         self.buffer.encoding = self.encoding
 
+        self.me = User('')
+
+    @property
+    def users(self):
+        users = [self.me]
+        for chan in self.me.channels:
+            users.extend(chan.users)
+
+        return list(set(users))
+
+    @property
+    def channels(self):
+        return self.me.channels
+
     def write(self, data):
         self.socket.send('{}\n'.format(data).encode(self.encoding))
 
@@ -161,18 +176,76 @@ class Connection(object):
 
 
 class User(object):
-    nick = None
     name = None
+    host = None
 
     def __init__(self, str):
         if '@' in str:
-            self.nick, parts = str.split('!', 1)
-            self.name, self.host = parts.split('@', 1)
+            self.nick, self.name, self.host = self.split_user_str(str)
         else:
-            self.host = str
+            self.nick = str
+
+        self.channels = []
 
     def __repr__(self):
         return '{0.nick}@{0.host}'.format(self) if self.nick else self.host
+
+    @staticmethod
+    def split_user_str(str):
+        nick, parts = str.split('!', 1)
+        name, host = parts.split('@', 1)
+        return nick.lstrip(':'), name, host
+
+    @classmethod
+    def get(cls, str, pool):
+        if isinstance(pool, Match):
+            pool = pool.connection
+
+        if isinstance(pool, Connection):
+            pool = pool.users
+
+        if pool is None:
+            pool = []
+
+        if '@' in str:
+            nick, _, _ = cls.split_user_str(str)
+        else:
+            nick = str
+
+        for user in pool:
+            if user.nick == nick:
+                return user
+
+        return cls(str)
+
+
+class Channel(object):
+
+    def __init__(self, name):
+        self.name = name.lstrip(':')
+        self.users = []
+
+    def __repr__(self):
+        return self.name
+
+    @classmethod
+    def get(cls, name, pool):
+        if isinstance(pool, Match):
+            pool = pool.connection
+
+        if isinstance(pool, Connection):
+            pool = pool.channels
+
+        if pool is None:
+            pool = []
+
+        name = name.lstrip(':')
+
+        for chan in pool:
+            if chan.name == name:
+                return chan
+
+        return cls(name)
 
 
 class Match(object):
@@ -246,9 +319,10 @@ COMMAND_PATTERN = re.compile(r'[A-Z]{4,5}')
 
 class Line(object):
 
-    def __init__(self, data):
-        self.raw = data
+    def __init__(self, data, connection=None):
+        self.raw = data.lstrip(':')
         self.datetime = datetime.datetime.now()
+        self.connection = connection
         self.parse()
 
     def __getitem__(self, item):
@@ -272,7 +346,6 @@ class Line(object):
 
         if self.usermsg:
             # ":Nick!Name@Host PRIVMSG #Chan :Hello world!"
-            self.sender = User(self.parts[0][1:])
             self.target = self.parts[2]
             self.pm = self.target[0] != '#'
             self.full_msg = ' '.join(self.parts[3:])[1:]
@@ -280,6 +353,13 @@ class Line(object):
             self.code = int(self.parts[1])
         elif COMMAND_PATTERN.match(self.parts[1]):
             self.command = self.parts[1]
+
+        if self.usermsg or getattr(self, 'command', None):
+            self.sender = User.get(self.parts[0], self.connection)
+
+            self.channel = None
+            if not getattr(self, 'pm', False):
+                self.channel = Channel.get(self.parts[2], self.connection)
 
 
 class Timer(object):
