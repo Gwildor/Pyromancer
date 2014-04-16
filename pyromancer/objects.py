@@ -241,6 +241,7 @@ class Match(object):
         self.connection.msg(target, message)
 
 CODE_PATTERN = re.compile(r'\d{3}')
+COMMAND_PATTERN = re.compile(r'[A-Z]{4,5}')
 
 
 class Line(object):
@@ -277,6 +278,8 @@ class Line(object):
             self.full_msg = ' '.join(self.parts[3:])[1:]
         elif CODE_PATTERN.match(self.parts[1]):
             self.code = int(self.parts[1])
+        elif COMMAND_PATTERN.match(self.parts[1]):
+            self.command = self.parts[1]
 
 
 class Timer(object):

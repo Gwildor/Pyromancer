@@ -116,3 +116,18 @@ def test_command_matches_code():
     line = Line(':irc.example.net 375 A :- irc.example.net message of the day')
     assert line.code == 375
     assert bool(instance.matches(line, settings)) is False
+
+
+def test_command_matches_command():
+    # A command is a 4 to 5 character all-capital string received from the
+    # server. Examples: JOIN, QUIT, NICK, etc.
+    settings = MockObject(command_prefix='!')
+    instance = command(command='PART')
+
+    line = Line(':John!JDoe@some.host PART #Chan :"Bye !"')
+    assert line.command == 'PART'
+    assert bool(instance.matches(line, settings)) is True
+
+    line = Line(':John!JDoe@some.host NICK Paul"')
+    assert line.command == 'NICK'
+    assert bool(instance.matches(line, settings)) is False
