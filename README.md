@@ -251,18 +251,18 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 ### To do
 
 * Figure out how to do translation of messages through the `Match.msg` function.
-* Add a command module which keeps track of channels joined and users in them which other commands can use.
 
 ### Changelist
 
 #### 1.0 - WIP
 
-* Add timers
-* Add integrated database support
+* Add timers.
+* Add integrated database support.
+* Add command module which tracks channels and users.
 
 ##### Yet to do for 1.0:
 * Pick a license
-* Add keeping track of channels and users
+* Allow giving a callable when creating a timer from command or timer.
 
 #### 0.4 - 2014-03-30
 
