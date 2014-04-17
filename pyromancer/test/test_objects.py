@@ -1,7 +1,7 @@
-import re
 import datetime
+import re
 
-from pyromancer.objects import User, Line, Match, Timer
+from pyromancer.objects import User, Line, Match, Timer, Channel
 from pyromancer.test.decorators import mock_connection
 from pyromancer.test.mock_objects import MockObject
 
@@ -18,6 +18,38 @@ def test_user_str_parsing():
     assert user.host is None
     assert user.name is None
     assert user.nick == 'AName'
+
+
+@mock_connection
+def test_user_get_function(c):
+    c.me = User('Test')
+    match = Match(None, None, c)
+
+    assert c.users == [c.me]
+    assert User.get('Test', c) is c.me
+    assert User.get('Test!A@B', c) is c.me
+    assert User.get('Test', match) is c.me
+    assert User.get('Test', None) is not c.me
+    assert User.get('Test2', c) is not c.me
+
+
+@mock_connection
+def test_channel_get_function(c):
+    c.me = User('')
+
+    chan = Channel('#test')
+    assert c.channels == []
+
+    c.me.channels.append(chan)
+    assert c.channels == [chan]
+
+    assert Channel.get('#test', c) is chan
+    assert Channel.get('#test2', c) is not chan
+
+    match = Match(None, None, c)
+    assert Channel.get('#test', match) is chan
+
+    assert Channel.get('#test', None) is not chan
 
 
 def test_line_parsing_with_privmsg():
