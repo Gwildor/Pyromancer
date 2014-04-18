@@ -44,7 +44,7 @@ class command(object):
         m = self.matches(line, settings)
 
         if m:
-            match = Match(m, line, connection)
+            match = Match(m, line, connection, settings)
             result = self.function(match)
 
             if result is not None:

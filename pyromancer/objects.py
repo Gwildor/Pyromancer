@@ -45,7 +45,7 @@ class Pyromancer(object):
                 self.process(line)
 
             for timer in _TIMERS:
-                timer.match(self, self.connection)
+                timer.match(self.connect_time, self.connection, self.settings)
 
             time.sleep(1.0 / ticks)
 
@@ -260,10 +260,11 @@ class Match(object):
     things a command may like to do.
     """
 
-    def __init__(self, match, line, connection):
+    def __init__(self, match, line, connection, settings=None):
         self.match = match
         self.line = line
         self.connection = connection
+        self.settings = settings
 
     def __getitem__(self, item):
         try:
@@ -380,10 +381,10 @@ class Timer(object):
                 self.function == other.function and
                 self.msg_tuple == other.msg_tuple)
 
-    def match(self, pyromancer, connection):
-        if self.matches(pyromancer):
+    def match(self, connect_time, connection, settings):
+        if self.matches(connect_time):
             self.last_time = datetime.datetime.now()
-            match = Match(None, None, connection)
+            match = Match(None, None, connection, settings)
 
             if self.function is not None:
                 result = self.function(match)
@@ -400,7 +401,7 @@ class Timer(object):
                 if self.remaining == 0:
                     _TIMERS.remove(self)
 
-    def matches(self, pyromancer):
+    def matches(self, connect_time):
         if self.direct:
             self.direct = False
             return True
@@ -413,7 +414,7 @@ class Timer(object):
             if hasattr(self, 'last_time'):
                 next_time = self.last_time + self.scheduled
             else:
-                next_time = pyromancer.connect_time + self.scheduled
+                next_time = connect_time + self.scheduled
 
         if next_time is not None:
             return datetime.datetime.now() >= next_time

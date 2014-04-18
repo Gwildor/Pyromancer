@@ -3,7 +3,6 @@ import re
 
 from pyromancer.objects import User, Line, Match, Timer, Channel
 from pyromancer.test.decorators import mock_connection
-from pyromancer.test.mock_objects import MockObject
 
 
 def test_user_str_parsing():
@@ -127,7 +126,5 @@ def test_timer_matches_function():
                direct=True), True),
     ]
 
-    p = MockObject(connect_time=connect_time)
-
     for timer, expected in timers:
-        assert timer.matches(p) is expected
+        assert timer.matches(connect_time) is expected
