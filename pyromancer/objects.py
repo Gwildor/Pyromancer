@@ -66,7 +66,7 @@ class Pyromancer(object):
             'disabled_commands', when=lambda f: hasattr(f, 'command'))
 
     def find_timers(self):
-        _TIMERS.clear()
+        _TIMERS[:] = []
 
         utils.find_functions(
             self.settings.packages, _TIMERS, 'timers', 'disabled_timers',

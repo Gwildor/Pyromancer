@@ -76,7 +76,7 @@ def test_command_messaging_yielding(c):
 def test_command_appends_timers():
     instance = command(r'')
     match = Match(None, None, None)
-    _TIMERS.clear()
+    _TIMERS[:] = []
 
     instance.send_messages((datetime.timedelta(seconds=3), 'User', 'Hi'),
                            match)

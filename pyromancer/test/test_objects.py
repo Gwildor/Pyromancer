@@ -145,7 +145,7 @@ def test_timer_decorator():
 def test_messaging_from_timer(c):
     instance = Timer(None)
     match = Match(None, None, c)
-    _TIMERS.clear()
+    _TIMERS[:] = []
 
     instance.send_messages((datetime.timedelta(seconds=3), 'User', 'Hi'),
                            match)
