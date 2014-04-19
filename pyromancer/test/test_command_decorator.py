@@ -1,10 +1,11 @@
+import datetime
 import re
 
 import pytest
 
 from pyromancer.decorators import command
 from pyromancer.exceptions import CommandException
-from pyromancer.objects import Match, Line
+from pyromancer.objects import Match, Line, _TIMERS, Timer
 from pyromancer.test.decorators import mock_connection
 from pyromancer.test.mock_objects import MockObject
 
@@ -22,6 +23,15 @@ MESSAGES = [
      'Hello world, moon and Mars'),
     (('Hello {}', ['world', 'moon']), "Hello ['world', 'moon']"),
 ]
+
+
+def test_command_decorator_set_function():
+    instance = command(r'')
+    function = lambda m: m
+    instance(function)
+
+    assert isinstance(function.command, command)
+    assert function.command.function is function
 
 
 @mock_connection
@@ -61,6 +71,19 @@ def test_command_messaging_yielding(c):
 
     for index, (msg, expected) in enumerate(MESSAGES):
         assert c.outbox[index] == 'PRIVMSG #Chan :{}'.format(expected)
+
+
+def test_command_appends_timers():
+    instance = command(r'')
+    match = Match(None, None, None)
+    _TIMERS.clear()
+
+    instance.send_messages((datetime.timedelta(seconds=3), 'User', 'Hi'),
+                           match)
+    assert len(_TIMERS) == 1
+    assert isinstance(_TIMERS[0], Timer)
+    assert _TIMERS[0].scheduled == datetime.timedelta(seconds=3)
+    assert _TIMERS[0].msg_tuple == ('User', 'Hi', (), {},)
 
 
 def test_command_matches_patterns():

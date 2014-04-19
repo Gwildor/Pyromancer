@@ -410,7 +410,6 @@ class Timer(object):
             self.direct = False
             return True
 
-        next_time = None
         if isinstance(self.scheduled, datetime.datetime):
             next_time = self.scheduled
 
@@ -420,10 +419,7 @@ class Timer(object):
             else:
                 next_time = connect_time + self.scheduled
 
-        if next_time is not None:
-            return datetime.datetime.now() >= next_time
-
-        return False
+        return datetime.datetime.now() >= next_time
 
     def send_messages(self, result, match):
         for r in utils.process_messages(result, with_target=True):

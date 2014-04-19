@@ -29,8 +29,20 @@ MESSAGES = [
      Timer(timedelta(seconds=3), example_command))
 ]
 
+MESSAGES_WITH_TARGET = [
+    ('Hello world', (None, 'Hello world', [], {})),
+    (('User', 'Hello world'), ('User', 'Hello world', [], {})),
+    (('User', 'Hello {}', 'world'), ('User', 'Hello {}', ['world'], {}))
+]
+
 
 def test_processing_messages():
     for result, expected in MESSAGES:
         for r in utils.process_messages(result):
+            assert r == expected
+
+
+def test_processing_messages_with_target():
+    for result, expected in MESSAGES_WITH_TARGET:
+        for r in utils.process_messages(result, with_target=True):
             assert r == expected

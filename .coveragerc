@@ -1,0 +1,2 @@
+[run]
+omit = pyromancer/settings.py,pyromancer/database.py
