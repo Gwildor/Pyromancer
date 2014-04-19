@@ -365,20 +365,24 @@ class Line(object):
 
 class Timer(object):
 
-    def __init__(self, scheduled, msg=None, *args, **kwargs):
+    def __init__(self, scheduled, msg_or_command=None, *args, **kwargs):
         self.scheduled = scheduled
         self.direct = kwargs.pop('direct', False)
         self.remaining = kwargs.pop('count', 0)
-        self.function = kwargs.pop('function', None)
         target = kwargs.pop('target', None)
 
         self.msg_tuple = None
-        if target is not None and msg is not None:
-            self.msg_tuple = (target, msg, args, kwargs,)
+        self.function = None
+
+        if callable(msg_or_command):
+            self.function = msg_or_command
+        else:
+            if target is not None and msg_or_command is not None:
+                self.msg_tuple = (target, msg_or_command, args, kwargs,)
 
     def __eq__(self, other):
         return (self.scheduled == other.scheduled and
-                self.function == other.function and
+                self.function is other.function and
                 self.msg_tuple == other.msg_tuple)
 
     def match(self, connect_time, connection, settings):

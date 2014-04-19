@@ -262,7 +262,6 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 
 ##### Yet to do for 1.0:
 * Pick a license
-* Allow giving a callable when creating a timer from command or timer.
 
 #### 0.4 - 2014-03-30
 

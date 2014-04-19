@@ -91,5 +91,5 @@ class timer(object):
         self.initkwargs = kwargs
 
     def __call__(self, fn):
-        fn.timer = Timer(*self.initargs, function=fn, **self.initkwargs)
+        fn.timer = Timer(*self.initargs, msg_or_command=fn, **self.initkwargs)
         return fn

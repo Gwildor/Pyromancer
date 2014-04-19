@@ -52,15 +52,22 @@ def process_messages(result, with_target=False):
         messages = [result]
 
     for msg in messages:
+        get_target = with_target
+
         if isinstance(msg, tuple):
             timer = False
             if isinstance(msg[0], (datetime.datetime, datetime.timedelta)):
                 scheduled = msg[0]
                 msg = msg[1:]
                 timer = True
-                with_target = True
 
-            if with_target:
+                if callable(msg[0]):
+                    get_target = False
+                    target = None
+                else:
+                    get_target = True
+
+            if get_target:
                 target = msg[0]
                 msg = msg[1:]
 
@@ -78,10 +85,13 @@ def process_messages(result, with_target=False):
             if timer:
                 yield Timer(scheduled, msg, *args, target=target, **kwargs)
                 continue
+        elif isinstance(msg, Timer):
+            yield msg
+            continue
         else:
             target, args, kwargs = None, [], {}
 
-        if with_target:
+        if get_target:
             yield target, msg, args, kwargs
         else:
             yield msg, args, kwargs
