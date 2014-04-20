@@ -1,6 +1,7 @@
 [![Build Status](http://img.shields.io/travis/Gwildor/Pyromancer.svg)](https://travis-ci.org/Gwildor/Pyromancer)
 [![Latest Version](http://img.shields.io/pypi/v/Pyromancer.svg)](https://pypi.python.org/pypi/Pyromancer)
 [![Coverage Status](http://img.shields.io/coveralls/Gwildor/Pyromancer.svg)](https://coveralls.io/r/Gwildor/Pyromancer)
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](https://tldrlegal.com/license/mit-license)
 
 Simple framework for creating IRC bots.
 
@@ -259,9 +260,10 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 * Add timers.
 * Add integrated database support.
 * Add command module which tracks channels and users.
+* Switch to MIT license.
 
 ##### Yet to do for 1.0:
-* Pick a license
+* Clean up code and raise test coverage.
 
 #### 0.4 - 2014-03-30
 
