@@ -5,7 +5,7 @@ import pytest
 
 from pyromancer.decorators import command
 from pyromancer.exceptions import CommandException
-from pyromancer.objects import Match, Line, _TIMERS, Timer
+from pyromancer.objects import Match, Line, Timer
 from pyromancer.test.decorators import mock_connection
 from pyromancer.test.mock_objects import MockObject
 
@@ -41,7 +41,7 @@ def test_command_messaging_return_tuple(c):
     match = Match(None, line, c)
 
     for msg, expected in MESSAGES:
-        instance.send_messages(msg, match)
+        instance.send_messages(msg, match, [])
         assert c.last == 'PRIVMSG #Chan :{}'.format(expected)
 
 
@@ -51,7 +51,7 @@ def test_command_messaging_return_list(c):
     instance = command(r'')
     match = Match(None, line, c)
 
-    instance.send_messages([msg for msg, expected in MESSAGES], match)
+    instance.send_messages([msg for msg, expected in MESSAGES], match, [])
 
     for index, (msg, expected) in enumerate(MESSAGES):
         assert c.outbox[index] == 'PRIVMSG #Chan :{}'.format(expected)
@@ -67,7 +67,7 @@ def test_command_messaging_yielding(c):
     instance = command(r'')
     match = Match(None, line, c)
 
-    instance.send_messages(mock_command(), match)
+    instance.send_messages(mock_command(), match, [])
 
     for index, (msg, expected) in enumerate(MESSAGES):
         assert c.outbox[index] == 'PRIVMSG #Chan :{}'.format(expected)
@@ -76,14 +76,14 @@ def test_command_messaging_yielding(c):
 def test_command_appends_timers():
     instance = command(r'')
     match = Match(None, None, None)
-    _TIMERS[:] = []
+    timers = []
 
     instance.send_messages((datetime.timedelta(seconds=3), 'User', 'Hi'),
-                           match)
-    assert len(_TIMERS) == 1
-    assert isinstance(_TIMERS[0], Timer)
-    assert _TIMERS[0].scheduled == datetime.timedelta(seconds=3)
-    assert _TIMERS[0].msg_tuple == ('User', 'Hi', (), {},)
+                           match, timers)
+    assert len(timers) == 1
+    assert isinstance(timers[0], Timer)
+    assert timers[0].scheduled == datetime.timedelta(seconds=3)
+    assert timers[0].msg_tuple == ('User', 'Hi', (), {},)
 
 
 def test_command_matches_patterns():

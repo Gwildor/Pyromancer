@@ -2,7 +2,7 @@ import re
 
 from pyromancer import utils
 from pyromancer.exceptions import CommandException
-from pyromancer.objects import Match, Timer, _TIMERS
+from pyromancer.objects import Match, Timer
 
 
 class command(object):
@@ -40,7 +40,7 @@ class command(object):
         self.function = fn
         return fn
 
-    def match(self, line, connection, settings):
+    def match(self, line, timers, connection, settings):
         m = self.matches(line, settings)
 
         if m:
@@ -48,7 +48,7 @@ class command(object):
             result = self.function(match)
 
             if result is not None:
-                self.send_messages(result, match)
+                self.send_messages(result, match, timers)
 
     def matches(self, line, settings):
         if not line.usermsg and not self.raw:
@@ -76,10 +76,10 @@ class command(object):
             if m:
                 return m
 
-    def send_messages(self, result, match):
+    def send_messages(self, result, match, timers):
         for r in utils.process_messages(result):
             if isinstance(r, Timer):
-                _TIMERS.append(r)
+                timers.append(r)
             else:
                 match.msg(r[0], *r[1], **r[2])
 

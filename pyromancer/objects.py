@@ -8,8 +8,6 @@ from irc.buffer import DecodingLineBuffer
 
 from pyromancer import utils
 
-_TIMERS = []
-
 
 class Pyromancer(object):
 
@@ -44,8 +42,9 @@ class Pyromancer(object):
             for line in self.connection.buffer.lines():
                 self.process(line)
 
-            for timer in _TIMERS:
-                timer.match(self.connect_time, self.connection, self.settings)
+            for timer in self.timers:
+                timer.match(self.timers, self.connect_time, self.connection,
+                            self.settings)
 
             time.sleep(1.0 / ticks)
 
@@ -56,7 +55,7 @@ class Pyromancer(object):
             self.connection.write('PONG {}\n'.format(line[1]))
 
         for c in self.commands:
-            c.command.match(line, self.connection, self.settings)
+            c.command.match(line, self.timers, self.connection, self.settings)
 
     def find_commands(self):
         self.commands = []
@@ -66,10 +65,10 @@ class Pyromancer(object):
             'disabled_commands', when=lambda f: hasattr(f, 'command'))
 
     def find_timers(self):
-        _TIMERS[:] = []
+        self.timers = []
 
         utils.find_functions(
-            self.settings.packages, _TIMERS, 'timers', 'disabled_timers',
+            self.settings.packages, self.timers, 'timers', 'disabled_timers',
             when=lambda f: hasattr(f, 'timer'), ret=lambda f: f.timer)
 
     def setup_database(self):
@@ -385,7 +384,7 @@ class Timer(object):
                 self.function is other.function and
                 self.msg_tuple == other.msg_tuple)
 
-    def match(self, connect_time, connection, settings):
+    def match(self, timers, connect_time, connection, settings):
         if self.matches(connect_time):
             self.last_time = datetime.datetime.now()
             match = Match(None, None, connection, settings)
@@ -394,16 +393,16 @@ class Timer(object):
                 result = self.function(match)
 
                 if result is not None:
-                    self.send_messages(result, match)
+                    self.send_messages(result, match, timers)
 
             if self.msg_tuple is not None:
-                self.send_messages(self.msg_tuple, match)
+                self.send_messages(self.msg_tuple, match, timers)
 
             if self.remaining > 0:
                 self.remaining -= 1
 
                 if self.remaining == 0:
-                    _TIMERS.remove(self)
+                    timers.remove(self)
 
     def matches(self, connect_time):
         if self.direct:
@@ -421,9 +420,9 @@ class Timer(object):
 
         return datetime.datetime.now() >= next_time
 
-    def send_messages(self, result, match):
+    def send_messages(self, result, match, timers):
         for r in utils.process_messages(result, with_target=True):
             if isinstance(r, Timer):
-                _TIMERS.append(r)
+                timers.append(r)
             else:
                 match.msg(r[1], *r[2], target=r[0], **r[3])

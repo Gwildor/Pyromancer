@@ -2,7 +2,7 @@ import datetime
 import re
 
 from pyromancer.decorators import timer
-from pyromancer.objects import User, Line, Match, Timer, Channel, _TIMERS
+from pyromancer.objects import User, Line, Match, Timer, Channel
 from pyromancer.test.decorators import mock_connection
 
 
@@ -145,14 +145,14 @@ def test_timer_decorator():
 def test_messaging_from_timer(c):
     instance = Timer(None)
     match = Match(None, None, c)
-    _TIMERS[:] = []
+    timers = []
 
     instance.send_messages((datetime.timedelta(seconds=3), 'User', 'Hi'),
-                           match)
-    assert len(_TIMERS) == 1
-    assert isinstance(_TIMERS[0], Timer)
-    assert _TIMERS[0].scheduled == datetime.timedelta(seconds=3)
-    assert _TIMERS[0].msg_tuple == ('User', 'Hi', (), {},)
+                           match, timers)
+    assert len(timers) == 1
+    assert isinstance(timers[0], Timer)
+    assert timers[0].scheduled == datetime.timedelta(seconds=3)
+    assert timers[0].msg_tuple == ('User', 'Hi', (), {},)
 
-    instance.send_messages(('User', 'Hello {}', 'world'), match)
+    instance.send_messages(('User', 'Hello {}', 'world'), match, timers)
     assert c.last == 'PRIVMSG User :Hello world'
