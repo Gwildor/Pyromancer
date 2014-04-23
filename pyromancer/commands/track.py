@@ -25,12 +25,11 @@ def kick(match):
 def join(match):
     chan = match.line.channel
     user = match.line.sender
+    chan.users.append(user)
+    user.channels.append(chan)
 
     if user is match.connection.me:
         match.connection.write('WHO {}'.format(chan.name))
-    else:
-        chan.users.append(user)
-        user.channels.append(chan)
 
 
 @command(command='QUIT')
