@@ -297,7 +297,7 @@ class Match(object):
             kw = {
                 'm': self,
                 'b': chr(2),
-                'k': chr(3),
+                'c': chr(3),
                 'u': chr(31),
             }
             kw.update(kwargs)

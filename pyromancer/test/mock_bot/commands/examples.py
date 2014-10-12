@@ -19,4 +19,4 @@ def say(match):
 
 @command(r'colors')
 def colors(match):
-    return '{u}{k}04C{k}05o{k}06l{k}o{k}07r{k}08{k}09s{k}!'
+    return '{u}{c}04C{c}05o{c}06l{c}o{c}07r{c}08{c}09s{c}!'

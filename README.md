@@ -260,6 +260,7 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 * Add timers.
 * Add integrated database support.
 * Add command module which tracks channels and users.
+* Change color code parameter in message formatting to `c` (was `k` by mistake).
 * Switch to MIT license.
 
 ##### Yet to do for 1.0:
