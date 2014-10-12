@@ -54,7 +54,7 @@ def bye(match):
 On IRC:
 
 ```
-<User> !bye everyone
+<User> bye everyone
 <Bot> Bye everyone!
 ```
 
