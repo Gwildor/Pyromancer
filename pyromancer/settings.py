@@ -6,5 +6,5 @@ ident = nick
 real_name = nick
 ticks = 10
 packages = []
-command_prefix = '!'
+command_prefix = None
 database = None

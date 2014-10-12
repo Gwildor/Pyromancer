@@ -62,7 +62,7 @@ class command(object):
 
         input = line.full_msg if not self.raw else line.raw
 
-        if self.use_prefix:
+        if self.use_prefix and settings.command_prefix:
             if not input.startswith(settings.command_prefix):
                 return
 
