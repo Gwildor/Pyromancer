@@ -172,6 +172,9 @@ You can also return a `Timer` instance, or specify a callable as the second item
 
 ### Using a database
 
+Using a database requires [SQLAlchemy][2].
+
+  [2]: http://www.sqlalchemy.org
   [3]: http://docs.sqlalchemy.org/en/latest/core/engines.html?highlight=create_engine#sqlalchemy.create_engine
   [4]: http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative.html#sqlalchemy.ext.declarative.declarative_base
   [5]: http://docs.sqlalchemy.org/en/latest/orm/session.html
@@ -236,15 +239,6 @@ def timers(match):
     return 'Timer count: {}', session.query(Test).count()
 ```
 
-### Dependencies
-
-* [irc][1]
-* [SQLAlchemy][2], if you want to enable the use of a database.
-
-
-  [1]: https://pypi.python.org/pypi/irc
-  [2]: http://www.sqlalchemy.org
-  
 ### Support
 
 Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3.
@@ -261,7 +255,9 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 * Add integrated database support.
 * Add command module which tracks channels and users.
 * Change color code parameter in message formatting to `c` (was `k` by mistake).
+* Dropped [irc][1] as a dependency.
 * Switch to MIT license.
+[1]: https://pypi.python.org/pypi/irc
 
 ##### Yet to do for 1.0:
 * Clean up code and raise test coverage.

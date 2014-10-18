@@ -4,8 +4,6 @@ import re
 import socket
 import time
 
-from irc.buffer import DecodingLineBuffer
-
 from pyromancer import utils
 
 
@@ -136,6 +134,35 @@ class Settings(object):
                              'installed packages'.format(item))
 
 
+class LineBuffer(object):
+    """Line buffer based on irc library's DecodingLineBuffer.
+
+    See https://bitbucket.org/jaraco/irc
+    """
+    line_sep_exp = re.compile(b'\r?\n')
+
+    def __init__(self, encoding='utf-8'):
+        self.buffer = b''
+        self.encoding = encoding
+
+    def feed(self, bytes):
+        self.buffer += bytes
+
+    def lines(self):
+        lines = self.line_sep_exp.split(self.buffer)
+        # save the last, unfinished, possibly empty line
+        self.buffer = lines.pop()
+
+        for line in lines:
+            yield line.decode(self.encoding, 'strict')
+
+    def __iter__(self):
+        return self.lines()
+
+    def __len__(self):
+        return len(self.buffer)
+
+
 class Connection(object):
 
     def __init__(self, host, port, encoding='utf8'):
@@ -144,8 +171,7 @@ class Connection(object):
         self.socket.setblocking(False)
         self.encoding = encoding
 
-        self.buffer = DecodingLineBuffer()
-        self.buffer.encoding = self.encoding
+        self.buffer = LineBuffer(self.encoding)
 
         self.me = User('')
 

@@ -16,9 +16,7 @@ setup(
     author='Gwildor Sok',
     author_email='gwildorsok@gmail.com',
     url='https://github.com/Gwildor/Pyromancer',
-    install_requires=[
-        'irc'
-    ],
+    install_requires=[],
     classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',
