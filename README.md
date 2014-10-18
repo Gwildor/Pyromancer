@@ -249,7 +249,7 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 
 ### Changelist
 
-#### 1.0 - WIP
+#### 1.0 - 2014-10-18
 
 * Add timers.
 * Add integrated database support.
@@ -258,9 +258,6 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 * Dropped [irc][1] as a dependency.
 * Switch to MIT license.
 [1]: https://pypi.python.org/pypi/irc
-
-##### Yet to do for 1.0:
-* Clean up code and raise test coverage.
 
 #### 0.4 - 2014-03-30
 
