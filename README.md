@@ -249,6 +249,10 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 
 ### Changelist
 
+#### 1.1 - WIP
+
+* Add support for secure connections.
+
 #### 1.0 - 2014-10-18
 
 * Add timers.

@@ -8,3 +8,4 @@ ticks = 10
 packages = []
 command_prefix = None
 database = None
+ssl = False

@@ -2,6 +2,7 @@ import datetime
 import importlib
 import re
 import socket
+import ssl
 import time
 
 from pyromancer import utils
@@ -20,8 +21,9 @@ class Pyromancer(object):
         self.listen()
 
     def connect(self):
-        self.connection = Connection(self.settings.host, self.settings.port,
-                                     self.settings.encoding)
+        self.connection = Connection(
+            self.settings.host, self.settings.port, self.settings.encoding,
+            self.settings.ssl)
 
         self.online = True
         self.connect_time = datetime.datetime.now()
@@ -165,12 +167,15 @@ class LineBuffer(object):
 
 class Connection(object):
 
-    def __init__(self, host, port, encoding='utf8'):
+    def __init__(self, host, port, encoding='utf8', use_ssl=False):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((host, port))
-        self.socket.setblocking(False)
-        self.encoding = encoding
 
+        if use_ssl:
+            self.socket = ssl.wrap_socket(self.socket)
+
+        self.socket.connect((host, port))
+
+        self.encoding = encoding
         self.buffer = LineBuffer(self.encoding)
 
         self.me = User('')
