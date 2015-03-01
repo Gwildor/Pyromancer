@@ -1,5 +1,6 @@
 import datetime
 import importlib
+import io
 import re
 import socket
 import ssl
@@ -198,7 +199,7 @@ class Connection(object):
     def read(self, bytes=4096):
         try:
             self.buffer.feed(self.socket.recv(bytes))
-        except BlockingIOError:
+        except io.BlockingIOError:
             pass
 
     def msg(self, target, msg):
