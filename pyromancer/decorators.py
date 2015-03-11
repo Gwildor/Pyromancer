@@ -31,7 +31,7 @@ class command(object):
 
         if not self.code and not self.command and len(patterns) == 0:
             raise CommandException(
-                'Either a (a list of) pattern(s), a three-digit code or an'
+                'Either a (list of) pattern(s), a three-digit code or an '
                 'all-capital command must be specified as first argument for '
                 'the command decorator.')
 
