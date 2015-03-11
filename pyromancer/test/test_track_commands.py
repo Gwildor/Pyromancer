@@ -20,7 +20,7 @@ def test_join_command(c):
     match(line)
     assert len(c.me.channels) == 1
     assert c.me.channels[0] is line.channel
-    assert c.last == 'WHO #Chan'
+    assert c.last == 'WHOIS Pyro'
 
     channel = c.me.channels[0]
     line = Line(':User1!Hello@world JOIN #Chan', c)
@@ -29,5 +29,6 @@ def test_join_command(c):
 
     match(line)
 
+    assert c.last == 'WHOIS User1'
     assert channel.users == [c.me, line.sender]
     assert line.sender.channels == [channel]

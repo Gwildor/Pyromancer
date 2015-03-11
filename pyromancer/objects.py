@@ -342,7 +342,7 @@ COMMAND_PATTERN = re.compile(r'[A-Z]{4,5}')
 
 class Line(object):
 
-    def __init__(self, data, connection=None):
+    def __init__(self, data, connection):
         self.raw = data.lstrip(':')
         self.datetime = datetime.datetime.now()
         self.connection = connection

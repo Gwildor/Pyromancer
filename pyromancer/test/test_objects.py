@@ -29,14 +29,11 @@ def test_user_get_function(c):
     assert User.get('Test', c) is c.me
     assert User.get('Test!A@B', c) is c.me
     assert User.get('Test', match) is c.me
-    assert User.get('Test', None) is not c.me
-    assert User.get('Test2', c) is not c.me
+    assert User.get('Test2', c) is None
 
 
 @mock_connection
 def test_channel_get_function(c):
-    c.me = User('')
-
     chan = Channel('#test')
     assert c.channels == []
 
@@ -44,17 +41,16 @@ def test_channel_get_function(c):
     assert c.channels == [chan]
 
     assert Channel.get('#test', c) is chan
-    assert Channel.get('#test2', c) is not chan
+    assert Channel.get('#test2', c) is None
 
     match = Match(None, None, c)
     assert Channel.get('#test', match) is chan
 
-    assert Channel.get('#test', None) is not chan
 
-
-def test_line_parsing_with_privmsg():
+@mock_connection
+def test_line_parsing_with_privmsg(c):
     line_str = ':John!JDoe@some.shot PRIVMSG #Chan :Some cool message'
-    line = Line(line_str)
+    line = Line(line_str, c)
 
     assert line.privmsg is True
     assert line.notice is False
@@ -88,13 +84,13 @@ def test_match_getitem():
 
 @mock_connection
 def test_match_msg_with_privmsg(c):
-    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message')
+    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message', c)
     match = Match(None, line, c)
     match.msg('A {} reply', 'cool')
 
     assert c.outbox[0] == 'PRIVMSG #Chan :A cool reply'
 
-    line = Line(':John!JDoe@some.host PRIVMSG TestBot :Some cool message')
+    line = Line(':John!JDoe@some.host PRIVMSG TestBot :Some cool message', c)
     match = Match(None, line, c)
     match.msg('A {} reply', 'cool')
 

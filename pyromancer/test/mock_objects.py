@@ -1,4 +1,4 @@
-from pyromancer.objects import Connection
+from pyromancer.objects import Connection, User
 
 
 class MockObject(object):
@@ -12,6 +12,7 @@ class MockConnection(Connection):
 
     def __init__(self, *args, **kwargs):
         self.outbox = []
+        self.me = User('')
 
     def write(self, data):
         self.outbox.append(data)

@@ -29,7 +29,7 @@ def join(match):
     user.channels.append(chan)
 
     if not user.auth:
-        match.connection.write('WHOIS {}'.format(nick))
+        match.connection.write('WHOIS {}'.format(user.nick))
 
 
 @command(command='QUIT')

@@ -1,2 +1,2 @@
 [run]
-omit = pyromancer/settings.py,pyromancer/database.py
+omit = pyromancer/settings.py,pyromancer/database.py,pyromancer/test/*

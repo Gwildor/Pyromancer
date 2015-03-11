@@ -36,7 +36,7 @@ def test_command_decorator_set_function():
 
 @mock_connection
 def test_command_messaging_return_tuple(c):
-    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message')
+    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message', c)
     instance = command(r'')
     match = Match(None, line, c)
 
@@ -47,7 +47,7 @@ def test_command_messaging_return_tuple(c):
 
 @mock_connection
 def test_command_messaging_return_list(c):
-    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message')
+    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message', c)
     instance = command(r'')
     match = Match(None, line, c)
 
@@ -63,7 +63,7 @@ def test_command_messaging_yielding(c):
         for msg, expected in MESSAGES:
             yield msg
 
-    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message')
+    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message', c)
     instance = command(r'')
     match = Match(None, line, c)
 
@@ -86,8 +86,9 @@ def test_command_appends_timers():
     assert timers[0].msg_tuple == ('User', 'Hi', (), {},)
 
 
-def test_command_matches_patterns():
-    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message')
+@mock_connection
+def test_command_matches_patterns(c):
+    line = Line(':John!JDoe@some.host PRIVMSG #Chan :Some cool message', c)
     settings = MockObject(command_prefix='!')
 
     instance = command(r'^Some', prefix=False)
@@ -113,7 +114,7 @@ def test_command_matches_patterns():
     instance = command(r'cool')
     assert bool(instance.matches(line, settings)) is True
 
-    line = Line(':irc.example.net 376 A :End of MOTD command')
+    line = Line(':irc.example.net 376 A :End of MOTD command', c)
 
     instance = command(r'example', prefix=False)
     assert bool(instance.matches(line, settings)) is False
@@ -122,7 +123,8 @@ def test_command_matches_patterns():
     assert bool(instance.matches(line, settings)) is True
 
 
-def test_command_matches_code():
+@mock_connection
+def test_command_matches_code(c):
     with pytest.raises(CommandException):
         command()
 
@@ -132,25 +134,27 @@ def test_command_matches_code():
     settings = MockObject(command_prefix='!')
     instance = command(code=376)
 
-    line = Line(':irc.example.net 376 A :End of MOTD command')
+    line = Line(':irc.example.net 376 A :End of MOTD command', c)
     assert line.code == 376
     assert bool(instance.matches(line, settings)) is True
 
-    line = Line(':irc.example.net 375 A :- irc.example.net message of the day')
+    line = Line(':irc.example.net 375 A :- irc.example.net message of the day',
+                c)
     assert line.code == 375
     assert bool(instance.matches(line, settings)) is False
 
 
-def test_command_matches_command():
+@mock_connection
+def test_command_matches_command(c):
     # A command is a 4 to 5 character all-capital string received from the
     # server. Examples: JOIN, QUIT, NICK, etc.
     settings = MockObject(command_prefix='!')
     instance = command(command='PART')
 
-    line = Line(':John!JDoe@some.host PART #Chan :"Bye !"')
+    line = Line(':John!JDoe@some.host PART #Chan :"Bye !"', c)
     assert line.command == 'PART'
     assert bool(instance.matches(line, settings)) is True
 
-    line = Line(':John!JDoe@some.host NICK Paul"')
+    line = Line(':John!JDoe@some.host NICK Paul"', c)
     assert line.command == 'NICK'
     assert bool(instance.matches(line, settings)) is False
