@@ -28,8 +28,8 @@ def join(match):
     chan.users.append(user)
     user.channels.append(chan)
 
-    if user is match.connection.me:
-        match.connection.write('WHO {}'.format(chan.name))
+    if not user.auth:
+        match.connection.write('WHOIS {}'.format(nick))
 
 
 @command(command='QUIT')
@@ -38,17 +38,27 @@ def quit(match):
         chan.users.remove(match.line.sender)
 
 
-@command(code=352)
-def who_entry(match):
-    user = User.get(match.line[7], match)
+@command(code=353)
+def names(match):
+    chan = Channel.get(match.line[4], match)
 
-    if user.host is None:
-        # User is new to us, so let's set info we know
-        user.host = match.line[5]
-
-    chan = Channel.get(match.line[3], match)
-    if user not in chan.users:
+    for nick in match.line[5:]:
+        nick = nick.lstrip(':!~&@%+')
+        user = User.get(nick, match)
         chan.users.append(user)
-
-    if chan not in user.channels:
         user.channels.append(chan)
+
+        if not user.auth:
+            match.connection.write('WHOIS {}'.format(nick))
+
+
+@command(code=311)
+def whois_host_and_name(match):
+    user = User.get(match.line[3], match)
+    user.host = match.line[5]
+
+
+@command(code=330)
+def whois_auth(match):
+    user = User.get(match.line[3], match)
+    user.auth = match.line[4]

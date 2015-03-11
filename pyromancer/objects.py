@@ -209,6 +209,7 @@ class Connection(object):
 class User(object):
     name = None
     host = None
+    auth = None
 
     def __init__(self, str):
         if '@' in str:

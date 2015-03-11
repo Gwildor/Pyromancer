@@ -252,6 +252,7 @@ Python 2.7 and 3.0 - 3.4 are supported. Note that development occurs on Python 3
 #### 1.1 - WIP
 
 * Add support for secure connections.
+* Add auth name for users if they are logged in and the track command module is enabled.
 * Fix not being able to connect on Python 2.7.
 
 #### 1.0 - 2014-10-18
