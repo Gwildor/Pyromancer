@@ -229,26 +229,21 @@ class User(object):
         return nick.lstrip(':'), name, host
 
     @classmethod
-    def get(cls, str, pool):
+    def get(cls, user_str, pool):
         if isinstance(pool, Match):
             pool = pool.connection
 
         if isinstance(pool, Connection):
             pool = pool.users
 
-        if pool is None:
-            pool = []
-
-        if '@' in str:
-            nick, _, _ = cls.split_user_str(str)
+        if '@' in user_str:
+            nick, _, _ = cls.split_user_str(user_str)
         else:
-            nick = str
+            nick = user_str
 
         for user in pool:
             if user.nick == nick:
                 return user
-
-        return cls(str)
 
 
 class Channel(object):
@@ -268,16 +263,11 @@ class Channel(object):
         if isinstance(pool, Connection):
             pool = pool.channels
 
-        if pool is None:
-            pool = []
-
         name = name.lstrip(':')
 
         for chan in pool:
             if chan.name == name:
                 return chan
-
-        return cls(name)
 
 
 class Match(object):
@@ -390,9 +380,15 @@ class Line(object):
         if self.usermsg or getattr(self, 'command', None):
             self.sender = User.get(self.parts[0], self.connection)
 
+            if not self.sender:
+                self.sender = User(self.parts[0])
+
             self.channel = None
             if not getattr(self, 'pm', False):
                 self.channel = Channel.get(self.parts[2], self.connection)
+
+                if not self.channel:
+                    self.channel = Channel(self.parts[2])
 
 
 class Timer(object):

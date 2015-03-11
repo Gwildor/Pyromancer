@@ -42,9 +42,16 @@ def quit(match):
 def names(match):
     chan = Channel.get(match.line[4], match)
 
+    if not chan:
+        chan = Channel(match.line[4])
+
     for nick in match.line[5:]:
         nick = nick.lstrip(':!~&@%+')
         user = User.get(nick, match)
+
+        if not user:
+            user = User(nick)
+
         chan.users.append(user)
         user.channels.append(chan)
 
