@@ -22,6 +22,7 @@ class command(object):
         self.raw = kwargs.get('raw', False)
         self.code = kwargs.get('code')
         self.command = kwargs.get('command')
+        self.admins_only = kwargs.get('admins', False)
 
         if self.code is not None and not isinstance(self.code, int):
             raise CommandException('The code argument must be an integer.')
@@ -52,6 +53,10 @@ class command(object):
 
     def matches(self, line, settings):
         if not line.usermsg and not self.raw:
+            return
+
+        if self.admins_only and hasattr(line, 'sender') and line.sender.auth \
+                not in settings.admins:
             return
 
         if self.code and getattr(line, 'code', None) == self.code:

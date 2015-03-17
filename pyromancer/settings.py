@@ -9,3 +9,4 @@ packages = []
 command_prefix = None
 database = None
 ssl = False
+admins = []
