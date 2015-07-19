@@ -2,6 +2,7 @@ import datetime
 import importlib
 import io
 import re
+import select
 import socket
 import ssl
 import time
@@ -170,11 +171,26 @@ class Connection(object):
 
     def __init__(self, host, port, encoding='utf8', use_ssl=False):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((host, port))
+
+        # We need non-blocking so it won't hang when there is no data.
+        self.socket.setblocking(False)
 
         if use_ssl:
-            self.socket = ssl.wrap_socket(self.socket)
+            self.socket = ssl.wrap_socket(
+                self.socket, do_handshake_on_connect=False)
 
-        self.socket.connect((host, port))
+            # We need to do the handshake manually, because we use a
+            # non-blocking socket.
+            # https://docs.python.org/2/library/ssl.html#ssl-nonblocking
+            while True:
+                try:
+                    self.socket.do_handshake()
+                    break
+                except ssl.SSLWantReadError:
+                    select.select([self.socket], [], [])
+                except ssl.SSLWantWriteError:
+                    select.select([], [self.socket], [])
 
         self.encoding = encoding
         self.buffer = LineBuffer(self.encoding)
@@ -199,7 +215,7 @@ class Connection(object):
     def read(self, bytes=4096):
         try:
             self.buffer.feed(self.socket.recv(bytes))
-        except io.BlockingIOError:
+        except (io.BlockingIOError, ssl.SSLWantReadError):
             pass
 
     def msg(self, target, msg):
